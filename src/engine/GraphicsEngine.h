@@ -1,11 +1,10 @@
 #ifndef __GFX_ENGINE_H__
 #define __GFX_ENGINE_H__
-#define GLEW_STATIC
 
 #include <string>
 #include <memory>
 #include <iostream>
-
+#include <GL/glew.h>
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>

@@ -21,6 +21,14 @@ GraphicsEngine::GraphicsEngine() : fpsAverage(0), fpsPrevious(0), fpsStart(0), f
 	// get the context (drawing space)
 	context3D = SDL_GL_CreateContext(window);
 
+	// initialise glew
+	glewExperimental = GL_TRUE;
+	glewInit();
+
+	GLuint vertexBuffer;
+	glGenBuffers(1, &vertexBuffer);
+	printf("%u\n", vertexBuffer);
+
 	if (nullptr == window)
 		throw EngineException("Failed to create window", SDL_GetError());
 
