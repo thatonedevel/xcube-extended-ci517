@@ -3,9 +3,23 @@
 SDL_Renderer * GraphicsEngine::renderer = nullptr;
 
 GraphicsEngine::GraphicsEngine() : fpsAverage(0), fpsPrevious(0), fpsStart(0), fpsEnd(0), drawColor(toSDLColor(0, 0, 0, 255)) {
-	window = SDL_CreateWindow("The X-CUBE 2D Game Engine",
+
+
+	// ---- add the opengl context: source from https://open.gl/context ----
+
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+
+	// --------------------------------------------------
+
+	window = SDL_CreateWindow("The X-CUBE Extended Game Engine",
 		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-		DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
+		DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, SDL_WINDOW_OPENGL); // use SDL_WINDOW_OPENGL
+
+	// get the context (drawing space)
+	context3D = SDL_GL_CreateContext(window);
 
 	if (nullptr == window)
 		throw EngineException("Failed to create window", SDL_GetError());
@@ -31,6 +45,12 @@ GraphicsEngine::~GraphicsEngine() {
 	IMG_Quit();
 	TTF_Quit();
 	SDL_DestroyWindow(window);
+	// destroy the opengl context
+#ifdef __DEBUG
+	debug("Destroying OpenGL Context");
+#endif // __DEBUG
+
+	SDL_GL_DeleteContext(context3D);
 	SDL_Quit();
 
 #ifdef __DEBUG
@@ -123,7 +143,9 @@ void GraphicsEngine::clearScreen() {
 }
 
 void GraphicsEngine::showScreen() {
-	SDL_RenderPresent(renderer);
+	// SDL_RenderPresent(renderer);
+	// swap graphics buffers - see https://www.khronos.org/opengl/wiki/Default_Framebuffer
+	SDL_GL_SwapWindow(window);
 }
 
 void GraphicsEngine::useFont(TTF_Font * _font) {

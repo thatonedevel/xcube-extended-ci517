@@ -56,6 +56,9 @@ class GraphicsEngine {
 		static SDL_Renderer * renderer;
 		SDL_Color drawColor;
 
+		// added for CI517 - taken from https://open.gl/context
+		SDL_GLContext context3D;
+
 		TTF_Font * font;
 
 		Uint32 fpsAverage, fpsPrevious, fpsStart, fpsEnd;

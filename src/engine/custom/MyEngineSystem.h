@@ -8,6 +8,7 @@ class MyEngineSystem {
 	private:
 
 	public:
+		MyEngineSystem();
 };
 
 #endif
