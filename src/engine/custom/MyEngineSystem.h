@@ -2,13 +2,15 @@
 #define __MY_ENGINE_H__
 
 #include "../EngineCommon.h"
+#include "../XCube2d.h"
 //#include "../GraphicsEngine.h"
 
 
 class MyEngineSystem {
 	friend class XCube2Engine;
 	private:
-		void translateWorldSpaceToDeviceSpace();
+		Vector2f translateWorldSpaceToDeviceSpace(Vector2f);
+		
 
 	public:
 		MyEngineSystem();

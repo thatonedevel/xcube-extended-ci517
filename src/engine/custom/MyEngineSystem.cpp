@@ -5,6 +5,23 @@ MyEngineSystem::MyEngineSystem()
 	std::cout << "test" << std::endl;
 }
 
+Vector2f MyEngineSystem::translateWorldSpaceToDeviceSpace(Vector2f worldSpaceCoords)
+{
+	// get instance of graphics engine
+	std::shared_ptr<GraphicsEngine> gfx = XCube2Engine::getInstance()->getGraphicsEngine();
+	// get the window size to determine ratio (device space has 0,0 as the centre)
+	Dimension2i winDimension = gfx->getCurrentWindowSize();
+	Vector2f origin = Vector2f(winDimension.w / 2, winDimension.h / 2);
+
+	float offsetX = worldSpaceCoords.x - origin.x;
+	float offsetY = (worldSpaceCoords.y - origin.y) * -1;
+
+	// divide this by the values of the origin coords
+	Vector2f resultCoords = Vector2f(offsetX / origin.x, offsetY / origin.y);
+
+	return resultCoords;
+}
+
 Vector3F::Vector3F(float newX, float newY, float newZ)
 {
 	x = newX;
@@ -84,6 +101,8 @@ Vector3F Vector3F::getUnitVector()
 	1. define coordinates for each vertex in world space
 	2. translate these to device space
 	3. add vertex coordinates to vertex buffer array
-	4. construct vertex buffer object with this array
+	4. construct vertex buffer object (use glGenBuffers, pass in no of buffers to gen and address of reference value [GLuint])
+	5. make last created buffer the active one
+	6. 
 	5. send data to graphics card
 */
