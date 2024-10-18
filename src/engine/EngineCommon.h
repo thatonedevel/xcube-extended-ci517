@@ -4,6 +4,7 @@
 #include <exception>
 #include <iostream>
 #include <string>
+#include <cmath>
 
 /**
     If enabled, most of the classes/structs will have
