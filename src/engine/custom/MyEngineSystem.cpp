@@ -20,6 +20,30 @@ Vector2f MyEngineSystem::translateWorldSpaceToDeviceSpace(Vector2f worldSpaceCoo
 	return resultCoords;
 }
 
+void MyEngineSystem::drawTriangle2D(Vector2f pointA, Vector2f pointB, Vector2f pointC)
+{
+	// translate the world coords of the vertex into screen space coordinates
+	Vector2f devicePointA = translateWorldSpaceToDeviceSpace(pointA);
+	Vector2f devicePointB = translateWorldSpaceToDeviceSpace(pointB);
+	Vector2f devicePointC = translateWorldSpaceToDeviceSpace(pointC);
+
+	// array to add to the vertex buffer
+	float deviceSpaceVertices[] =
+	{
+		devicePointA.x, devicePointA.y,
+		devicePointB.x, devicePointB.y,
+		devicePointC.x, devicePointC.y
+	};
+
+	GLuint vertexBuffer; // will be a reference to the vertex buffer object managed by openGL
+	// generate a new vbo
+	glGenBuffers(1, &vertexBuffer);
+	// make this the active vertex buffer (GL_ARRAY_BUFFER is the memory address of the active buffer)
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(deviceSpaceVertices), deviceSpaceVertices, GL_STATIC_DRAW);
+
+}
+
 Vector3F::Vector3F(float newX, float newY, float newZ)
 {
 	x = newX;

@@ -10,11 +10,13 @@ class MyEngineSystem {
 	friend class XCube2Engine;
 	private:
 		std::shared_ptr<GraphicsEngine> gfxInstance = nullptr;
+		std::string vertexShader = "";
+		std::string fragmentShader = "";
 		Vector2f translateWorldSpaceToDeviceSpace(Vector2f);
 
 	public:
 		MyEngineSystem();
-		void drawTriangle2D();
+		void drawTriangle2D(Vector2f, Vector2f, Vector2f);
 };
 
 struct Vector3F
