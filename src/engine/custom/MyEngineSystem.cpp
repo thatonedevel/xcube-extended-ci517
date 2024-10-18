@@ -2,15 +2,13 @@
 
 MyEngineSystem::MyEngineSystem()
 {
-	std::cout << "test" << std::endl;
+	gfxInstance = XCube2Engine::getInstance()->getGraphicsEngine();
 }
 
 Vector2f MyEngineSystem::translateWorldSpaceToDeviceSpace(Vector2f worldSpaceCoords)
 {
-	// get instance of graphics engine
-	std::shared_ptr<GraphicsEngine> gfx = XCube2Engine::getInstance()->getGraphicsEngine();
 	// get the window size to determine ratio (device space has 0,0 as the centre)
-	Dimension2i winDimension = gfx->getCurrentWindowSize();
+	Dimension2i winDimension = gfxInstance->getCurrentWindowSize();
 	Vector2f origin = Vector2f(winDimension.w / 2, winDimension.h / 2);
 
 	float offsetX = worldSpaceCoords.x - origin.x;

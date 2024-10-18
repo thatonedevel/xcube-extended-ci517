@@ -9,11 +9,12 @@
 class MyEngineSystem {
 	friend class XCube2Engine;
 	private:
+		std::shared_ptr<GraphicsEngine> gfxInstance = nullptr;
 		Vector2f translateWorldSpaceToDeviceSpace(Vector2f);
-		
 
 	public:
 		MyEngineSystem();
+		void drawTriangle2D();
 };
 
 struct Vector3F
