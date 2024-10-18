@@ -2,10 +2,13 @@
 #define __MY_ENGINE_H__
 
 #include "../EngineCommon.h"
+//#include "../GraphicsEngine.h"
+
 
 class MyEngineSystem {
 	friend class XCube2Engine;
 	private:
+		void translateWorldSpaceToDeviceSpace();
 
 	public:
 		MyEngineSystem();
@@ -17,9 +20,9 @@ public:
 	Vector3F(float, float, float);
 
 	// coord getter methods
-	float getX();
-	float getY();
-	float getZ();
+	float getX() { return x; };
+	float getY() { return y; };
+	float getZ() { return z; };
 
 	float calculateMagnitude();
 	Vector3F getUnitVector();
