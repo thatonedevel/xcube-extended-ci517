@@ -83,5 +83,7 @@ Vector3F Vector3F::getUnitVector()
 	Steps to create a shape:
 	1. define coordinates for each vertex in world space
 	2. translate these to device space
-
+	3. add vertex coordinates to vertex buffer array
+	4. construct vertex buffer object with this array
+	5. send data to graphics card
 */
