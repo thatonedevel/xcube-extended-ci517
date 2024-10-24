@@ -3,6 +3,53 @@
 MyEngineSystem::MyEngineSystem()
 {
 	gfxInstance = XCube2Engine::getInstance()->getGraphicsEngine();
+
+	// set up vertex shaders (taken from open.gl)
+	// version no is for the glsl version (i.e. 150)
+	vertexShaderSource = R"glsl(
+	#version 150 core
+	in vec2 position;
+	
+	void main()
+	{
+		// gl_Position is the shader output for where to display the vertices
+		// vec4 is used to add data for the position. components can be passed individually or through a vec
+		gl_Position = vec4(position, 0.0, 1.0);
+	}
+)glsl";
+
+	// fragment shader
+	// needs output of the final colour (outColor)
+	// uses vec4 for colour data (rgba)
+	// use fragment shader to control shape colours
+	fragmentShaderSource = R"glsl(
+	# version 150 core
+	out vec4 outColor;
+
+	void main()
+	{
+		outColor = vec4(1.0, 1.0, 1.0, 1.0);
+	}
+)glsl";
+
+	// compile the shaders - create a shader object, then bind the shader source to it
+	// memory is handled in the same way as it is for vertex buffer objects
+	vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	fragShader = glCreateShader(GL_FRAGMENT_SHADER);
+
+	// bind shader source to the shader objects
+	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+	glShaderSource(fragShader, 1, &fragmentShaderSource, NULL);
+
+	// compile the shaders
+	glCompileShader(vertexShader);
+	glCompileShader(fragShader);
+
+	// attach the shaders to the program
+	myEngineShaderProg = glCreateProgram();
+
+	glAttachShader(myEngineShaderProg, vertexShader);
+	glAttachShader(myEngineShaderProg, fragShader);
 }
 
 Vector2f MyEngineSystem::translateWorldSpaceToDeviceSpace(Vector2f worldSpaceCoords)

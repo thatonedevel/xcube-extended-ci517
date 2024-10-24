@@ -10,9 +10,16 @@ class MyEngineSystem {
 	friend class XCube2Engine;
 	private:
 		std::shared_ptr<GraphicsEngine> gfxInstance = nullptr;
-		std::string vertexShader = "";
-		std::string fragmentShader = "";
+		const char* vertexShaderSource = "";
+		const char* fragmentShaderSource = "";
 		Vector2f translateWorldSpaceToDeviceSpace(Vector2f);
+
+		// shaders
+		GLuint vertexShader;
+		GLuint fragShader;
+
+		// shader program (used to combine shaders)
+		GLuint myEngineShaderProg;
 
 	public:
 		MyEngineSystem();
