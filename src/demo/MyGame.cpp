@@ -17,7 +17,7 @@ void MyGame::update() {
 }
 
 void MyGame::render() {
-
+	mySystem->drawTriangle2D(Vector2f(200, 400), Vector2f(400, 200), Vector2f(600, 400));
 }
 
 void MyGame::renderUI() {

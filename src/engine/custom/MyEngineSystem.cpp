@@ -1,8 +1,11 @@
 #include "MyEngineSystem.h"
 
-MyEngineSystem::MyEngineSystem()
+MyEngineSystem::MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx)
 {
-	gfxInstance = XCube2Engine::getInstance()->getGraphicsEngine();
+	gfxInstance = gfx;
+	// create vertex array object - this stores the links between the vertex attributes and buffer objects
+	glGenVertexArrays(1, &vertexArrObj);
+	glBindVertexArray(vertexArrObj);
 
 	// set up vertex shaders (taken from open.gl)
 	// version no is for the glsl version (i.e. 150)
@@ -43,6 +46,10 @@ MyEngineSystem::MyEngineSystem()
 
 	// compile the shaders
 	glCompileShader(vertexShader);
+
+	// check for errors
+	GLenum err = glGetError();
+
 	glCompileShader(fragShader);
 
 	// attach the shaders to the program
@@ -50,6 +57,12 @@ MyEngineSystem::MyEngineSystem()
 
 	glAttachShader(myEngineShaderProg, vertexShader);
 	glAttachShader(myEngineShaderProg, fragShader);
+}
+
+MyEngineSystem::~MyEngineSystem()
+{
+	// subsystem destructor
+
 }
 
 Vector2f MyEngineSystem::translateWorldSpaceToDeviceSpace(Vector2f worldSpaceCoords)
@@ -88,6 +101,17 @@ void MyEngineSystem::drawTriangle2D(Vector2f pointA, Vector2f pointB, Vector2f p
 	// make this the active vertex buffer (GL_ARRAY_BUFFER is the memory address of the active buffer)
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(deviceSpaceVertices), deviceSpaceVertices, GL_STATIC_DRAW);
+	
+	// send vertex data to the vertex shader
+	// takes shader program and the attribute we want access to
+	GLuint positionInput = glGetAttribLocation(myEngineShaderProg, "position");
+	// takes the input attribute, the dimensions of the input vector, normalisation (convert to -1.0 to 1.0)
+	// last params are stride and offset (amount of bytes of space between vertices and amount of bytes before first vertex)
+	glVertexAttribPointer(positionInput, 2, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(positionInput);
+
+	
+	glDrawArrays(GL_TRIANGLES, 0, 3);
 
 }
 

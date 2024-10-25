@@ -2,8 +2,7 @@
 #define __MY_ENGINE_H__
 
 #include "../EngineCommon.h"
-#include "../XCube2d.h"
-//#include "../GraphicsEngine.h"
+#include "../GraphicsEngine.h"
 
 
 class MyEngineSystem {
@@ -21,8 +20,11 @@ class MyEngineSystem {
 		// shader program (used to combine shaders)
 		GLuint myEngineShaderProg;
 
+		GLuint vertexArrObj;
+
 	public:
-		MyEngineSystem();
+		MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx);
+		~MyEngineSystem();
 		void drawTriangle2D(Vector2f, Vector2f, Vector2f);
 };
 
