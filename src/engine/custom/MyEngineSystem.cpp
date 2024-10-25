@@ -48,15 +48,28 @@ MyEngineSystem::MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx)
 	glCompileShader(vertexShader);
 
 	// check for errors
-	GLenum err = glGetError();
+	GLint res;
+	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &res);
+
+	if (res == GL_TRUE)
+	{
+		std::cout << "Vertex shader compiled successfully\n";
+	}
 
 	glCompileShader(fragShader);
+	glGetShaderiv(fragShader, GL_COMPILE_STATUS, &res);
+	if (res == GL_TRUE)
+	{
+		std::cout << "Fragment shader compiled successfully\n";
+	}
 
 	// attach the shaders to the program
 	myEngineShaderProg = glCreateProgram();
 
 	glAttachShader(myEngineShaderProg, vertexShader);
 	glAttachShader(myEngineShaderProg, fragShader);
+
+	glBindFragDataLocation(fragShader, 0, "outColor");
 }
 
 MyEngineSystem::~MyEngineSystem()
@@ -110,8 +123,10 @@ void MyEngineSystem::drawTriangle2D(Vector2f pointA, Vector2f pointB, Vector2f p
 	glVertexAttribPointer(positionInput, 2, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(positionInput);
 
-	
 	glDrawArrays(GL_TRIANGLES, 0, 3);
+	GLenum err = glGetError();
+
+	std::cout << err << std::endl;
 
 }
 
