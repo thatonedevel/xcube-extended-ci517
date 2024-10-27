@@ -20,7 +20,7 @@ class MyEngineSystem {
 
 		// shader program (used to combine shaders)
 		GLuint myEngineShaderProg;
-
+		GLuint myEngineSysVBO;
 		GLuint vertexArrObj;
 
 	public:

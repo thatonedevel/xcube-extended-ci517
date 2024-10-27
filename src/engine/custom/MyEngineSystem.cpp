@@ -6,6 +6,9 @@ MyEngineSystem::MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx)
 	// create vertex array object - this stores the links between the vertex attributes and buffer objects
 	glGenVertexArrays(1, &vertexArrObj);
 	glBindVertexArray(vertexArrObj);
+	// generate the buffer and bind it
+	glGenBuffers(1, &myEngineSysVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, myEngineSysVBO);
 
 	// set up vertex shaders (taken from open.gl)
 	// version no is for the glsl version (i.e. 150)
@@ -107,12 +110,7 @@ void MyEngineSystem::drawTriangle2D(Vector2f pointA, Vector2f pointB, Vector2f p
 		devicePointB.x, devicePointB.y,
 		devicePointC.x, devicePointC.y
 	};
-
-	GLuint vertexBuffer; // will be a reference to the vertex buffer object managed by openGL
-	// generate a new vbo
-	glGenBuffers(1, &vertexBuffer);
 	// make this the active vertex buffer (GL_ARRAY_BUFFER is the memory address of the active buffer)
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(deviceSpaceVertices), deviceSpaceVertices, GL_STATIC_DRAW);
 	
 	// send vertex data to the vertex shader
