@@ -73,6 +73,9 @@ MyEngineSystem::MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx)
 	glAttachShader(myEngineShaderProg, fragShader);
 
 	glBindFragDataLocation(fragShader, 0, "outColor");
+	
+	glLinkProgram(myEngineShaderProg);
+	glUseProgram(myEngineShaderProg);
 }
 
 MyEngineSystem::~MyEngineSystem()
