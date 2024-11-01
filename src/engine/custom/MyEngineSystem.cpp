@@ -204,6 +204,16 @@ Vector3F Vector3F::getUnitVector()
 	return Vector3F(x, y, z) / mag;
 }
 
+Mesh3D::Mesh3D()
+{
+	
+}
+
+Mesh3D::Mesh3D(std::string path)
+{
+	std::ifstream* modelFile = new std::ifstream(path);
+	// read the data in from the obj file
+}
 
 /*
 	Steps to create a shape:

@@ -5,6 +5,8 @@
 #include <iostream>
 #include <string>
 #include <cmath>
+#include <vector>
+#include <fstream>
 
 /**
     If enabled, most of the classes/structs will have

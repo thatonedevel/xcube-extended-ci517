@@ -57,3 +57,16 @@ private:
 };
 
 #endif
+
+class Mesh3D
+{
+public:
+	Mesh3D();
+	Mesh3D(std::string path);
+	Vector3F getEulerRotation() { return eulerRotation; };
+	Vector3F getOriginPosition() { return originPosition; };
+private:
+	Vector3F originPosition = Vector3F(0, 0, 0);
+	Vector3F eulerRotation = Vector3F(0, 0, 0);
+	std::vector<Vector3F>* vertices; // use a dynamic structure to allow for vertices to be added / removed
+};
