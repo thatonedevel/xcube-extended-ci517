@@ -1,5 +1,26 @@
 #include "MyEngineSystem.h"
 
+std::vector<std::string> splitString(std::string input, char splitDelimeter)
+{
+	int componentStartIndex = 0;
+	int componentEndIndex = 0;
+	std::vector<std::string> components = {};
+
+	for (int charIndex = 0; charIndex < input.length; charIndex++)
+	{
+		componentEndIndex = charIndex;
+
+		if (input[charIndex] == splitDelimeter)
+		{
+			// vector syntax https://www.w3schools.com/cpp/cpp_vectors.asp
+			components.push_back(input.substr(componentStartIndex, componentEndIndex - componentStartIndex));
+			componentStartIndex = componentEndIndex + 1;
+		}
+	}
+
+	return components;
+}
+
 MyEngineSystem::MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx)
 {
 	gfxInstance = gfx;
@@ -211,8 +232,62 @@ Mesh3D::Mesh3D()
 
 Mesh3D::Mesh3D(std::string path)
 {
-	std::ifstream* modelFile = new std::ifstream(path);
+	std::ifstream modelFile(path);
+	std::string objFileLine = "";
 	// read the data in from the obj file
+	bool atEndOfFile = false;
+
+	while (!atEndOfFile)
+	{
+		std::getline(modelFile, objFileLine);
+		// check if the line is a null terminator - taken from http://courses.washington.edu/css342/timots/Notes/eof.html
+		// also refer to https://docs.blender.org/manual/en/2.80/addons/io_scene_obj.html
+		if (modelFile.eof())
+		{
+			atEndOfFile = true;
+		}
+		else
+		{
+			// determine the content of the line
+			if (objFileLine.substr(0, 2) == "v ")
+			{
+				// vertex, will be followed by a space
+				// seperate the line into its vertex coordinates
+				std::vector<std::string> coords = splitString(objFileLine.substr(2, objFileLine.length - 3,), ' ');
+				// parse these as floating point values
+				Vector3F vertex = Vector3F(std::stof(coords[0]), std::stof(coords[1]), std::stof(coords[2]));
+				// add this to the collection of vertices
+				vertices->push_back(vertex);
+			}
+			else if (objFileLine.substr(0, 2) == "vn")
+			{
+				// vertex normals
+				std::vector<std::string> normalStr = splitString(objFileLine.substr(3, objFileLine.length - 3), ' ');
+				Vector3F normal = Vector3F(std::stof(normalStr[0]), std::stof(normalStr[1]), std::stof(normalStr[2]));
+				normals->push_back(normal);
+			}
+			else if (objFileLine.substr(0, 2) == "f ")
+			{
+				// faces
+				std::vector<std::string> faceData = splitString(objFileLine.substr(2, objFileLine.length - 3), ' ');
+				std::vector<std::string> faceA = splitString(faceData[0], '/');
+				std::vector<std::string> faceB = splitString(faceData[1], '/');
+				std::vector<std::string> faceC = splitString(faceData[2], '/');
+
+				faces->push_back(Face3D(std::stoi(faceA[0]), std::stoi(faceB[0]), std::stoi(faceB[0]), std::stoi(faceA[2])));
+			}
+		}
+	}
+
+	modelFile.close();
+}
+
+Face3D::Face3D(int vertexA, int vertexB, int vertexC, int normal)
+{
+	vertexIndA = vertexA;
+	vertexIndB = vertexB;
+	vertexIndC = vertexC;
+	normalIndex = normal;
 }
 
 /*

@@ -4,7 +4,7 @@
 #include "../EngineCommon.h"
 #include "../GraphicsEngine.h"
 
-// TODO: FIX MEMORY LEAK
+std::vector<std::string> splitString(std::string input, char splitDelimeter)
 
 class MyEngineSystem {
 	friend class XCube2Engine;
@@ -56,8 +56,6 @@ private:
 	float z = 0;
 };
 
-#endif
-
 class Mesh3D
 {
 public:
@@ -65,8 +63,32 @@ public:
 	Mesh3D(std::string path);
 	Vector3F getEulerRotation() { return eulerRotation; };
 	Vector3F getOriginPosition() { return originPosition; };
+	void moveObject(Vector3F translation);
 private:
 	Vector3F originPosition = Vector3F(0, 0, 0);
 	Vector3F eulerRotation = Vector3F(0, 0, 0);
+	Vector3F scale = Vector3F(1, 1, 1);
+
 	std::vector<Vector3F>* vertices; // use a dynamic structure to allow for vertices to be added / removed
+	std::vector<Face3D>* faces;
+	std::vector<Vector3F>* normals;
 };
+
+struct Face3D
+{
+public:
+	Face3D(int, int, int, int);
+	int getVertexIndA() { return vertexIndA; };
+	int getVertexIndB() { return vertexIndB; };
+	int getVertexIndC() { return vertexIndC; };
+	int getNormalIndex() { return normalIndex; };
+
+private:
+	int vertexIndA;
+	int vertexIndB;
+	int vertexIndC;
+
+	int normalIndex;
+};
+
+#endif
