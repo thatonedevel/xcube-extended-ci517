@@ -4,9 +4,10 @@ std::vector<std::string> splitString(std::string input, char splitDelimeter)
 {
 	int componentStartIndex = 0;
 	int componentEndIndex = 0;
+
 	std::vector<std::string> components = {};
 
-	for (int charIndex = 0; charIndex < input.length; charIndex++)
+	for (int charIndex = 0; charIndex < input.length(); charIndex++)
 	{
 		componentEndIndex = charIndex;
 
@@ -15,6 +16,11 @@ std::vector<std::string> splitString(std::string input, char splitDelimeter)
 			// vector syntax https://www.w3schools.com/cpp/cpp_vectors.asp
 			components.push_back(input.substr(componentStartIndex, componentEndIndex - componentStartIndex));
 			componentStartIndex = componentEndIndex + 1;
+		}
+		else if (charIndex == input.length() - 1)
+		{
+			// push last part of string to component vector
+			components.push_back(input.substr(componentStartIndex, input.length() - componentStartIndex));
 		}
 	}
 
@@ -146,9 +152,9 @@ void MyEngineSystem::drawTriangle2D(Vector2f pointA, Vector2f pointB, Vector2f p
 	glEnableVertexAttribArray(positionInput);
 
 	glDrawArrays(GL_TRIANGLES, 0, 3);
-	GLenum err = glGetError();
+	//GLenum err = glGetError();
 
-	std::cout << err << std::endl;
+	//std::cout << err << std::endl;
 
 }
 
@@ -253,7 +259,7 @@ Mesh3D::Mesh3D(std::string path)
 			{
 				// vertex, will be followed by a space
 				// seperate the line into its vertex coordinates
-				std::vector<std::string> coords = splitString(objFileLine.substr(2, objFileLine.length - 3,), ' ');
+				std::vector<std::string> coords = splitString(objFileLine.substr(2, objFileLine.length() - 3), ' ');
 				// parse these as floating point values
 				Vector3F vertex = Vector3F(std::stof(coords[0]), std::stof(coords[1]), std::stof(coords[2]));
 				// add this to the collection of vertices
@@ -262,14 +268,14 @@ Mesh3D::Mesh3D(std::string path)
 			else if (objFileLine.substr(0, 2) == "vn")
 			{
 				// vertex normals
-				std::vector<std::string> normalStr = splitString(objFileLine.substr(3, objFileLine.length - 3), ' ');
+				std::vector<std::string> normalStr = splitString(objFileLine.substr(3, objFileLine.length() - 3), ' ');
 				Vector3F normal = Vector3F(std::stof(normalStr[0]), std::stof(normalStr[1]), std::stof(normalStr[2]));
 				normals->push_back(normal);
 			}
 			else if (objFileLine.substr(0, 2) == "f ")
 			{
 				// faces
-				std::vector<std::string> faceData = splitString(objFileLine.substr(2, objFileLine.length - 3), ' ');
+				std::vector<std::string> faceData = splitString(objFileLine.substr(2, objFileLine.length() - 3), ' ');
 				std::vector<std::string> faceA = splitString(faceData[0], '/');
 				std::vector<std::string> faceB = splitString(faceData[1], '/');
 				std::vector<std::string> faceC = splitString(faceData[2], '/');
