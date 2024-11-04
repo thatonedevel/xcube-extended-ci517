@@ -4,7 +4,7 @@
 #include "../EngineCommon.h"
 #include "../GraphicsEngine.h"
 
-std::vector<std::string> splitString(std::string input, char splitDelimeter)
+std::vector<std::string> splitString(std::string input, char splitDelimeter);
 
 class MyEngineSystem {
 	friend class XCube2Engine;
@@ -56,6 +56,23 @@ private:
 	float z = 0;
 };
 
+struct Face3D
+{
+public:
+	Face3D(int, int, int, int);
+	int getVertexIndA() { return vertexIndA; };
+	int getVertexIndB() { return vertexIndB; };
+	int getVertexIndC() { return vertexIndC; };
+	int getNormalIndex() { return normalIndex; };
+
+private:
+	int vertexIndA;
+	int vertexIndB;
+	int vertexIndC;
+
+	int normalIndex;
+};
+
 class Mesh3D
 {
 public:
@@ -74,21 +91,6 @@ private:
 	std::vector<Vector3F>* normals;
 };
 
-struct Face3D
-{
-public:
-	Face3D(int, int, int, int);
-	int getVertexIndA() { return vertexIndA; };
-	int getVertexIndB() { return vertexIndB; };
-	int getVertexIndC() { return vertexIndC; };
-	int getNormalIndex() { return normalIndex; };
 
-private:
-	int vertexIndA;
-	int vertexIndB;
-	int vertexIndC;
-
-	int normalIndex;
-};
 
 #endif
