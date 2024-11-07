@@ -86,11 +86,9 @@ private:
 	Vector3F eulerRotation = Vector3F(0, 0, 0);
 	Vector3F scale = Vector3F(1, 1, 1);
 
-	std::vector<Vector3F>* vertices; // use a dynamic structure to allow for vertices to be added / removed
-	std::vector<Face3D>* faces;
-	std::vector<Vector3F>* normals;
+	std::vector<Vector3F>* vertices = nullptr; // use a dynamic structure to allow for vertices to be added / removed
+	std::vector<Face3D>* faces = nullptr;
+	std::vector<Vector3F>* normals = nullptr;
 };
-
-
 
 #endif
