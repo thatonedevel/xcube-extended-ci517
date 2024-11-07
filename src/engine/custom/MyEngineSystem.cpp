@@ -233,59 +233,68 @@ Vector3F Vector3F::getUnitVector()
 
 Mesh3D::Mesh3D()
 {
-	
+	// initialise mesh data
+	faces = new std::vector<Face3D>();
+	vertices = new std::vector<Vector3F>();
+	normals = new std::vector<Vector3F>();
 }
 
 Mesh3D::Mesh3D(std::string path)
 {
-	std::ifstream modelFile(path);
+	faces = new std::vector<Face3D>();
+	vertices = new std::vector<Vector3F>();
+	normals = new std::vector<Vector3F>();
+
+	std::ifstream modelFile;
+	modelFile.open(path);
+	// check if it worked
+	if (!modelFile.fail())
+		std::cout << "Successfully opened file " << path << std::endl;
 	std::string objFileLine = "";
 	// read the data in from the obj file
-	bool atEndOfFile = false;
-
-	while (!atEndOfFile)
+	while (std::getline(modelFile, objFileLine))
 	{
-		std::getline(modelFile, objFileLine);
 		// check if the line is a null terminator - taken from http://courses.washington.edu/css342/timots/Notes/eof.html
 		// also refer to https://docs.blender.org/manual/en/2.80/addons/io_scene_obj.html
-		if (modelFile.eof())
-		{
-			atEndOfFile = true;
-		}
-		else
-		{
-			// determine the content of the line
-			if (objFileLine.substr(0, 2) == "v ")
-			{
-				// vertex, will be followed by a space
-				// seperate the line into its vertex coordinates
-				std::vector<std::string> coords = splitString(objFileLine.substr(2, objFileLine.length() - 3), ' ');
-				// parse these as floating point values
-				Vector3F vertex = Vector3F(std::stof(coords[0]), std::stof(coords[1]), std::stof(coords[2]));
-				// add this to the collection of vertices
-				vertices->push_back(vertex);
-			}
-			else if (objFileLine.substr(0, 2) == "vn")
-			{
-				// vertex normals
-				std::vector<std::string> normalStr = splitString(objFileLine.substr(3, objFileLine.length() - 3), ' ');
-				Vector3F normal = Vector3F(std::stof(normalStr[0]), std::stof(normalStr[1]), std::stof(normalStr[2]));
-				normals->push_back(normal);
-			}
-			else if (objFileLine.substr(0, 2) == "f ")
-			{
-				// faces
-				std::vector<std::string> faceData = splitString(objFileLine.substr(2, objFileLine.length() - 3), ' ');
-				std::vector<std::string> faceA = splitString(faceData[0], '/');
-				std::vector<std::string> faceB = splitString(faceData[1], '/');
-				std::vector<std::string> faceC = splitString(faceData[2], '/');
+		
+		// determine the content of the line
+		std::cout << "Current line: " << objFileLine << std::endl;
 
-				faces->push_back(Face3D(std::stoi(faceA[0]), std::stoi(faceB[0]), std::stoi(faceB[0]), std::stoi(faceA[2])));
-			}
+		if (objFileLine.substr(0, 2) == "v ")
+		{
+			// vertex, will be followed by a space
+			// seperate the line into its vertex coordinates
+			std::vector<std::string> coords = splitString(objFileLine.substr(2, objFileLine.length() - 3), ' ');
+			// parse these as floating point values
+			Vector3F vertex = Vector3F(std::stof(coords[0]), std::stof(coords[1]), std::stof(coords[2]));
+			// add this to the collection of vertices
+			vertices->push_back(vertex);
+			std::cout << "Added vertex" << std::endl;
 		}
+		else if (objFileLine.substr(0, 2) == "vn")
+		{
+			// vertex normals
+			std::vector<std::string> normalStr = splitString(objFileLine.substr(3, objFileLine.length() - 3), ' ');
+			Vector3F normal = Vector3F(std::stof(normalStr[0]), std::stof(normalStr[1]), std::stof(normalStr[2]));
+			normals->push_back(normal);
+			std::cout << "Added normal" << std::endl;
+		}
+		else if (objFileLine.substr(0, 2) == "f ")
+		{
+			// faces
+			std::vector<std::string> faceData = splitString(objFileLine.substr(2, objFileLine.length() - 3), ' ');
+			std::vector<std::string> faceA = splitString(faceData[0], '/');
+			std::vector<std::string> faceB = splitString(faceData[1], '/');
+			std::vector<std::string> faceC = splitString(faceData[2], '/');
+
+			faces->push_back(Face3D(std::stoi(faceA[0]), std::stoi(faceB[0]), std::stoi(faceC[0]), std::stoi(faceA[2])));
+			std::cout << "Added face" << std::endl;
+		}
+		
 	}
 
 	modelFile.close();
+	std::cout << "Closed obj file " << path << std::endl;
 }
 
 Face3D::Face3D(int vertexA, int vertexB, int vertexC, int normal)
