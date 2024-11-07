@@ -7,7 +7,6 @@
 #include <cmath>
 #include <vector>
 #include <fstream>
-#include <regex>
 
 /**
     If enabled, most of the classes/structs will have
