@@ -45,6 +45,7 @@ XCube2Engine::XCube2Engine() {
 	// init subsystems
 
 	gfxInstance = std::shared_ptr<GraphicsEngine>(new GraphicsEngine());
+	std::cout << "Using OpenGL version " << glGetString(GL_VERSION) << std::endl;
 
 #ifdef __DEBUG
 	debug("GraphicsEngine() successful");
