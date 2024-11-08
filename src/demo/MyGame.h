@@ -19,6 +19,7 @@ class MyGame : public AbstractGame {
 		/* GAMEPLAY */
 		int score, numKeys, lives;
 		bool gameWon;
+		Mesh3D* currentMesh = nullptr;
 
 		void handleKeyEvents();
 		void update();
