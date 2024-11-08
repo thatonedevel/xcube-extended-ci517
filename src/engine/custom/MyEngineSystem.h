@@ -58,9 +58,14 @@ public:
 	Mesh3D(std::string path);
 	Vector3F getEulerRotation() { return eulerRotation; };
 	Vector3F getOriginPosition() { return originPosition; };
+	Vector3F getVertexCoordinate(int index) { return (*vertices)[index]; };
+	int getVertexCount() { return vertices->size(); };
 	void moveObject(Vector3F translation);
 	void rotateYAxis(float angle) { eulerRotation = eulerRotation + Vector3F(0, angle, 0); };
 	Vector3F getFaceNormal(int faceIndex);
+
+	// getters
+	std::vector<Face3D>* getFaces() { return faces; };
 private:
 	Vector3F originPosition = Vector3F(0, 0, 0);
 	Vector3F eulerRotation = Vector3F(0, 0, 0);
@@ -79,6 +84,7 @@ class MyEngineSystem {
 		const char* vertexShaderSource = "";
 		const char* fragmentShaderSource = "";
 		Vector2f translateWorldSpaceToDeviceSpace(Vector2f);
+		Vector3F translateWorldSpaceToDeviceSpace(Vector3F);
 
 		// shaders
 		GLuint vertexShader;
@@ -93,7 +99,7 @@ class MyEngineSystem {
 		MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx);
 		~MyEngineSystem();
 		void drawTriangle2D(Vector2f, Vector2f, Vector2f);
-		void drawMeshObjects(Mesh3D);
+		void drawMeshObjects(Mesh3D, Vector3F);
 };
 
 

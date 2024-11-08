@@ -41,13 +41,13 @@ MyEngineSystem::MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx)
 	// version no is for the glsl version (i.e. 150)
 	vertexShaderSource = R"glsl(
 	#version 150 core
-	in vec2 position;
+	in vec3 position;
 	
 	void main()
 	{
 		// gl_Position is the shader output for where to display the vertices
 		// vec4 is used to add data for the position. components can be passed individually or through a vec
-		gl_Position = vec4(position, 0.0, 1.0);
+		gl_Position = vec4(position, 1.0);
 	}
 )glsl";
 
@@ -111,6 +111,21 @@ MyEngineSystem::~MyEngineSystem()
 
 }
 
+Vector3F MyEngineSystem::translateWorldSpaceToDeviceSpace(Vector3F worldSpaceCoords)
+{
+	// get the window size to determine ratio (device space has 0,0 as the centre)
+	Dimension2i winDimension = gfxInstance->getCurrentWindowSize();
+	Vector2f origin = Vector2f(winDimension.w / 2, winDimension.h / 2);
+
+	float offsetX = worldSpaceCoords.getX() - origin.x;
+	float offsetY = (worldSpaceCoords.getY() - origin.y) * -1;
+
+	// divide this by the values of the origin coords
+	Vector3F resultCoords = Vector3F(offsetX / origin.x, offsetY / origin.y, worldSpaceCoords.getZ());
+
+	return resultCoords;
+}
+
 Vector2f MyEngineSystem::translateWorldSpaceToDeviceSpace(Vector2f worldSpaceCoords)
 {
 	// get the window size to determine ratio (device space has 0,0 as the centre)
@@ -158,12 +173,52 @@ void MyEngineSystem::drawTriangle2D(Vector2f pointA, Vector2f pointB, Vector2f p
 
 }
 
-void MyEngineSystem::drawMeshObjects(Mesh3D)
+void MyEngineSystem::drawMeshObjects(Mesh3D mesh, Vector3F position)
 {
-	int vertexCount = 0;
-	// determine total amount of vertices
-	
-	// TODO: evalute rotations on every mesh to determine final verex coordinates
+	// use a heap declaration to account for variable mesh sizes (ie main memory instead of call stack)
+	// see https://learn.microsoft.com/en-us/cpp/cpp/arrays-cpp?view=msvc-170#heap-declarations
+	// REMEMBER TO DELETE THIS WHEN DONE - CAN CAUSE MEMORY LEAKS
+	float* meshVertices = new float[mesh.getVertexCount() * 3];
+	// using GL_TRIANGLE_STRIP to draw mesh
+	// loop through faces
+	// each face in vertex stream must be connected to two of the previous vertices
+	//std::vector<Face3D>* faces = mesh.getFaces();
+	//bool complete = false;
+	//int faceIndex = 0;
+
+	//do 
+	//{
+	//	Face3D face = (*faces)[faceIndex];
+	//	// face is adjacent if it shares two vertices with current face
+
+	//}
+	//while (!complete);
+
+	for (int vertexIndex = 0; vertexIndex < mesh.getVertexCount() * 3; vertexIndex++)
+	{
+		Vector3F coord = translateWorldSpaceToDeviceSpace(mesh.getVertexCoordinate(vertexIndex / 3));
+		// ind + 1 divisible by 3 = z, divisible by 2 = y, otherwise x
+		if (vertexIndex + 1 % 3 == 0 && vertexIndex != 0)
+			meshVertices[vertexIndex] = coord.getZ();
+		else if (vertexIndex + 1 % 2 == 0 && vertexIndex != 0)
+			meshVertices[vertexIndex] = coord.getY();
+		else
+			meshVertices[vertexIndex] = coord.getX();
+	}
+
+	// vertex stream complete, bind it to the vbo
+	glBufferData(GL_ARRAY_BUFFER, sizeof(meshVertices), &meshVertices, NULL);
+	// get references to the input attributes for the vertex and fragment shader
+	GLuint vertShaderInput = glGetAttribLocation(myEngineShaderProg, "position");
+	glVertexAttribPointer(vertShaderInput, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(vertShaderInput);
+
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, sizeof(meshVertices) / sizeof(meshVertices[0]));
+
+	// delete heap pointer for mesh vertex array
+	delete[] meshVertices;
+
+	// TODO: evalute rotations on every mesh to determine final vertex coordinates
 
 }
 
