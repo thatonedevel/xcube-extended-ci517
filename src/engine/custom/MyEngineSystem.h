@@ -4,30 +4,9 @@
 #include "../EngineCommon.h"
 #include "../GraphicsEngine.h"
 
+#define DEG2RAD 0.017453292519943295769236907684
+
 std::vector<std::string> splitString(std::string input, char splitDelimeter);
-
-class MyEngineSystem {
-	friend class XCube2Engine;
-	private:
-		std::shared_ptr<GraphicsEngine> gfxInstance = nullptr;
-		const char* vertexShaderSource = "";
-		const char* fragmentShaderSource = "";
-		Vector2f translateWorldSpaceToDeviceSpace(Vector2f);
-
-		// shaders
-		GLuint vertexShader;
-		GLuint fragShader;
-
-		// shader program (used to combine shaders)
-		GLuint myEngineShaderProg;
-		GLuint myEngineSysVBO;
-		GLuint vertexArrObj;
-
-	public:
-		MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx);
-		~MyEngineSystem();
-		void drawTriangle2D(Vector2f, Vector2f, Vector2f);
-};
 
 struct Vector3F
 {
@@ -55,7 +34,6 @@ private:
 	float y = 0;
 	float z = 0;
 };
-
 struct Face3D
 {
 public:
@@ -81,14 +59,43 @@ public:
 	Vector3F getEulerRotation() { return eulerRotation; };
 	Vector3F getOriginPosition() { return originPosition; };
 	void moveObject(Vector3F translation);
+	void rotateYAxis(float angle) { eulerRotation = eulerRotation + Vector3F(0, angle, 0); };
+	Vector3F getFaceNormal(int faceIndex);
 private:
 	Vector3F originPosition = Vector3F(0, 0, 0);
 	Vector3F eulerRotation = Vector3F(0, 0, 0);
 	Vector3F scale = Vector3F(1, 1, 1);
+	std::vector<Vector3F> evaluateYAxisRotation();
 
 	std::vector<Vector3F>* vertices = nullptr; // use a dynamic structure to allow for vertices to be added / removed
 	std::vector<Face3D>* faces = nullptr;
 	std::vector<Vector3F>* normals = nullptr;
 };
+
+class MyEngineSystem {
+	friend class XCube2Engine;
+	private:
+		std::shared_ptr<GraphicsEngine> gfxInstance = nullptr;
+		const char* vertexShaderSource = "";
+		const char* fragmentShaderSource = "";
+		Vector2f translateWorldSpaceToDeviceSpace(Vector2f);
+
+		// shaders
+		GLuint vertexShader;
+		GLuint fragShader;
+
+		// shader program (used to combine shaders)
+		GLuint myEngineShaderProg;
+		GLuint myEngineSysVBO;
+		GLuint vertexArrObj;
+
+	public:
+		MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx);
+		~MyEngineSystem();
+		void drawTriangle2D(Vector2f, Vector2f, Vector2f);
+		void drawMeshObjects(Mesh3D);
+};
+
+
 
 #endif
