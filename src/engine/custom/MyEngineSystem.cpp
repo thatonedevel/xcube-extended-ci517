@@ -158,6 +158,15 @@ void MyEngineSystem::drawTriangle2D(Vector2f pointA, Vector2f pointB, Vector2f p
 
 }
 
+void MyEngineSystem::drawMeshObjects(Mesh3D)
+{
+	int vertexCount = 0;
+	// determine total amount of vertices
+	
+	// TODO: evalute rotations on every mesh to determine final verex coordinates
+
+}
+
 Vector3F::Vector3F(float newX, float newY, float newZ)
 {
 	x = newX;
@@ -295,6 +304,30 @@ Mesh3D::Mesh3D(std::string path)
 
 	modelFile.close();
 	std::cout << "Closed obj file " << path << std::endl;
+}
+
+Vector3F Mesh3D::getFaceNormal(int faceIndex)
+{
+	Face3D reqFace = (*faces)[faceIndex];
+	Vector3F normal = (*normals)[reqFace.getNormalIndex() - 1];
+	return normal;
+}
+
+std::vector<Vector3F> Mesh3D::evaluateYAxisRotation()
+{
+	std::vector<Vector3F> translatedVertices = {};
+	float angle = eulerRotation.getY();
+	float hypotenuse = 0;
+	
+	for (Vector3F vertex : *vertices)
+	{
+		// note: cmath trig functions use radians: https://cplusplus.com/reference/cmath/sin/
+		hypotenuse = sqrt(pow(vertex.getX(), 2) + pow(vertex.getZ(), 2));
+		Vector3F vertexTranslation(cos(angle) * hypotenuse * DEG2RAD, 0, sin(angle) * hypotenuse * DEG2RAD);
+
+	}
+
+	return {};
 }
 
 Face3D::Face3D(int vertexA, int vertexB, int vertexC, int normal)
