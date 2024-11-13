@@ -108,7 +108,7 @@ MyEngineSystem::MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx)
 MyEngineSystem::~MyEngineSystem()
 {
 	// subsystem destructor
-
+	//delete[] vertexStream;
 }
 
 Vector3F MyEngineSystem::translateWorldSpaceToDeviceSpace(Vector3F worldSpaceCoords)
@@ -166,7 +166,7 @@ void MyEngineSystem::drawTriangle2D(Vector2f pointA, Vector2f pointB, Vector2f p
 	glVertexAttribPointer(positionInput, 2, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(positionInput);
 
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 3);
 	//GLenum err = glGetError();
 
 	//std::cout << err << std::endl;
@@ -178,7 +178,14 @@ void MyEngineSystem::drawMeshObjects(Mesh3D mesh, Vector3F position)
 	// use a heap declaration to account for variable mesh sizes (ie main memory instead of call stack)
 	// see https://learn.microsoft.com/en-us/cpp/cpp/arrays-cpp?view=msvc-170#heap-declarations
 	// REMEMBER TO DELETE THIS WHEN DONE - CAN CAUSE MEMORY LEAKS
-	float* meshVertices = new float[mesh.getVertexCount() * 3];
+	
+	// purge vertex stream array
+	for (int i = 0; i < sizeof(vertexStream) / sizeof(vertexStream[0]); i++)
+	{
+		vertexStream[i] = NULL;
+	}
+
+
 	// using GL_TRIANGLE_STRIP to draw mesh
 	// loop through faces
 	// each face in vertex stream must be connected to two of the previous vertices
@@ -194,29 +201,31 @@ void MyEngineSystem::drawMeshObjects(Mesh3D mesh, Vector3F position)
 	//}
 	//while (!complete);
 
-	for (int vertexIndex = 0; vertexIndex < mesh.getVertexCount() * 3; vertexIndex++)
+	for (size_t vertexIndex = 0; vertexIndex < mesh.getVertexCount() * 3; vertexIndex += 3)
 	{
 		Vector3F coord = translateWorldSpaceToDeviceSpace(mesh.getVertexCoordinate(vertexIndex / 3));
-		// ind + 1 divisible by 3 = z, divisible by 2 = y, otherwise x
-		if (vertexIndex + 1 % 3 == 0 && vertexIndex != 0)
-			meshVertices[vertexIndex] = coord.getZ();
-		else if (vertexIndex + 1 % 2 == 0 && vertexIndex != 0)
-			meshVertices[vertexIndex] = coord.getY();
-		else
-			meshVertices[vertexIndex] = coord.getX();
+		// array size is always divisble by 3 --> use index, +1, +2
+		vertexStream[vertexIndex] = coord.getX();
+		vertexStream[vertexIndex + 1] = coord.getY();
+		vertexStream[vertexIndex + 2] = coord.getZ();
+
+		std::cout << "Cycle no: " << vertexIndex << std::endl;
 	}
 
 	// vertex stream complete, bind it to the vbo
-	glBufferData(GL_ARRAY_BUFFER, sizeof(meshVertices), &meshVertices, NULL);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexStream), vertexStream, GL_STATIC_DRAW);
 	// get references to the input attributes for the vertex and fragment shader
 	GLuint vertShaderInput = glGetAttribLocation(myEngineShaderProg, "position");
 	glVertexAttribPointer(vertShaderInput, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(vertShaderInput);
 
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, sizeof(meshVertices) / sizeof(meshVertices[0]));
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, mesh.getVertexCount() * 3);
+	//std::cout << "Mesh size: " << sizeof(meshVertices) / sizeof(float*) << std::endl;
 
 	// delete heap pointer for mesh vertex array
-	delete[] meshVertices;
+	//delete[] meshVertices;
+
+	std::cout << glGetError() << std::endl;
 
 	// TODO: evalute rotations on every mesh to determine final vertex coordinates
 
