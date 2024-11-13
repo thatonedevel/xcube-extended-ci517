@@ -23,7 +23,7 @@ MyGame::MyGame() : AbstractGame(), score(0), lives(3), numKeys(5), gameWon(false
 }
 
 MyGame::~MyGame() {
-
+	delete currentMesh;
 }
 
 void MyGame::handleKeyEvents() {
