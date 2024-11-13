@@ -111,7 +111,7 @@ MyEngineSystem::MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx)
 MyEngineSystem::~MyEngineSystem()
 {
 	// subsystem destructor
-	//delete[] vertexStream;
+	delete vertexStream;
 }
 
 Vector3F MyEngineSystem::translateWorldSpaceToDeviceSpace(Vector3F worldSpaceCoords)
@@ -186,9 +186,9 @@ void MyEngineSystem::drawMeshObjects(Mesh3D mesh, Vector3F position)
 	for (int faceIndex = 0; faceIndex < mesh.getFaceCount(); faceIndex++)
 	{
 		Face3D currentFace = mesh.getFaceAtIndex(faceIndex);
-		Vector3F coordA = mesh.getVertexCoordinate(currentFace.getVertexIndA());
-		Vector3F coordB = mesh.getVertexCoordinate(currentFace.getVertexIndB());
-		Vector3F coordC = mesh.getVertexCoordinate(currentFace.getVertexIndC());
+		Vector3F coordA = translateWorldSpaceToDeviceSpace(mesh.getVertexCoordinate(currentFace.getVertexIndA()));
+		Vector3F coordB = translateWorldSpaceToDeviceSpace(mesh.getVertexCoordinate(currentFace.getVertexIndB()));
+		Vector3F coordC = translateWorldSpaceToDeviceSpace(mesh.getVertexCoordinate(currentFace.getVertexIndC()));
 
 		// add the coordinates to the vertex stream
 		vertexStream->push_back(coordA.getX());
@@ -205,6 +205,15 @@ void MyEngineSystem::drawMeshObjects(Mesh3D mesh, Vector3F position)
 
 		// yes i know this is terrible but i can't think of anything else OXKJHGKCJH
 	}
+
+	glBufferData(GL_ARRAY_BUFFER, vertexStream->size(), &vertexStream, GL_STATIC_DRAW);
+	// get vertex attribute and enable it
+	GLuint vertexPos = glGetAttribLocation(myEngineShaderProg, "position");
+	glVertexAttribPointer(vertexPos, 3, GL_FLOAT, false, 0, 0);
+	glEnableVertexArrayAttrib(vertexArrObj, vertexPos);
+
+	// draw the mesh
+	glDrawArrays(GL_TRIANGLES, 0, vertexStream->size());
 }
 
 Vector3F::Vector3F(float newX, float newY, float newZ)
