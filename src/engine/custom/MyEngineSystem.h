@@ -59,13 +59,14 @@ public:
 	Vector3F getEulerRotation() { return eulerRotation; };
 	Vector3F getOriginPosition() { return originPosition; };
 	Vector3F getVertexCoordinate(int index) { return (*vertices)[index]; };
-	int getVertexCount() { return vertices->size(); };
+	size_t getVertexCount() { return vertices->size(); };
 	void moveObject(Vector3F translation);
 	void rotateYAxis(float angle) { eulerRotation = eulerRotation + Vector3F(0, angle, 0); };
 	Vector3F getFaceNormal(int faceIndex);
 
 	// getters
 	std::vector<Face3D>* getFaces() { return faces; };
+	Face3D getFaceAtIndex(int index) { return (*faces)[index]; };
 private:
 	Vector3F originPosition = Vector3F(0, 0, 0);
 	Vector3F eulerRotation = Vector3F(0, 0, 0);
@@ -94,6 +95,9 @@ class MyEngineSystem {
 		GLuint myEngineShaderProg;
 		GLuint myEngineSysVBO;
 		GLuint vertexArrObj;
+
+		// vertex stream array, declared on heap
+		float vertexStream[1000];
 
 	public:
 		MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx);
