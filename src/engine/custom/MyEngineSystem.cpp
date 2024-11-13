@@ -29,6 +29,9 @@ std::vector<std::string> splitString(std::string input, char splitDelimeter)
 
 MyEngineSystem::MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx)
 {
+	// initialise vertex stream
+	vertexStream = new std::vector<float>();
+
 	gfxInstance = gfx;
 	// create vertex array object - this stores the links between the vertex attributes and buffer objects
 	glGenVertexArrays(1, &vertexArrObj);
@@ -175,60 +178,33 @@ void MyEngineSystem::drawTriangle2D(Vector2f pointA, Vector2f pointB, Vector2f p
 
 void MyEngineSystem::drawMeshObjects(Mesh3D mesh, Vector3F position)
 {
-	// use a heap declaration to account for variable mesh sizes (ie main memory instead of call stack)
-	// see https://learn.microsoft.com/en-us/cpp/cpp/arrays-cpp?view=msvc-170#heap-declarations
-	// REMEMBER TO DELETE THIS WHEN DONE - CAN CAUSE MEMORY LEAKS
-	
-	// purge vertex stream array
-	for (int i = 0; i < sizeof(vertexStream) / sizeof(vertexStream[0]); i++)
+	// purge vertex stream vector
+	vertexStream->clear();
+
+	// use GL_TRIANGLES for rendering faces
+	// produces an vector of 3n but will work immediately for meshes not consisting of single triangle strips
+	for (int faceIndex = 0; faceIndex < mesh.getFaceCount(); faceIndex++)
 	{
-		vertexStream[i] = NULL;
+		Face3D currentFace = mesh.getFaceAtIndex(faceIndex);
+		Vector3F coordA = mesh.getVertexCoordinate(currentFace.getVertexIndA());
+		Vector3F coordB = mesh.getVertexCoordinate(currentFace.getVertexIndB());
+		Vector3F coordC = mesh.getVertexCoordinate(currentFace.getVertexIndC());
+
+		// add the coordinates to the vertex stream
+		vertexStream->push_back(coordA.getX());
+		vertexStream->push_back(coordA.getY());
+		vertexStream->push_back(coordA.getZ());
+
+		vertexStream->push_back(coordB.getX());
+		vertexStream->push_back(coordB.getY());
+		vertexStream->push_back(coordB.getZ());
+
+		vertexStream->push_back(coordC.getX());
+		vertexStream->push_back(coordC.getY());
+		vertexStream->push_back(coordC.getZ());
+
+		// yes i know this is terrible but i can't think of anything else OXKJHGKCJH
 	}
-
-
-	// using GL_TRIANGLE_STRIP to draw mesh
-	// loop through faces
-	// each face in vertex stream must be connected to two of the previous vertices
-	//std::vector<Face3D>* faces = mesh.getFaces();
-	//bool complete = false;
-	//int faceIndex = 0;
-
-	//do 
-	//{
-	//	Face3D face = (*faces)[faceIndex];
-	//	// face is adjacent if it shares two vertices with current face
-
-	//}
-	//while (!complete);
-
-	for (size_t vertexIndex = 0; vertexIndex < mesh.getVertexCount() * 3; vertexIndex += 3)
-	{
-		Vector3F coord = translateWorldSpaceToDeviceSpace(mesh.getVertexCoordinate(vertexIndex / 3));
-		// array size is always divisble by 3 --> use index, +1, +2
-		vertexStream[vertexIndex] = coord.getX();
-		vertexStream[vertexIndex + 1] = coord.getY();
-		vertexStream[vertexIndex + 2] = coord.getZ();
-
-		std::cout << "Cycle no: " << vertexIndex << std::endl;
-	}
-
-	// vertex stream complete, bind it to the vbo
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexStream), vertexStream, GL_STATIC_DRAW);
-	// get references to the input attributes for the vertex and fragment shader
-	GLuint vertShaderInput = glGetAttribLocation(myEngineShaderProg, "position");
-	glVertexAttribPointer(vertShaderInput, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(vertShaderInput);
-
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, mesh.getVertexCount() * 3);
-	//std::cout << "Mesh size: " << sizeof(meshVertices) / sizeof(float*) << std::endl;
-
-	// delete heap pointer for mesh vertex array
-	//delete[] meshVertices;
-
-	std::cout << glGetError() << std::endl;
-
-	// TODO: evalute rotations on every mesh to determine final vertex coordinates
-
 }
 
 Vector3F::Vector3F(float newX, float newY, float newZ)
