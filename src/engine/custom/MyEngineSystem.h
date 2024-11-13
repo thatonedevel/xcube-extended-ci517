@@ -65,8 +65,8 @@ public:
 	Vector3F getFaceNormal(int faceIndex);
 
 	// getters
-	std::vector<Face3D>* getFaces() { return faces; };
 	Face3D getFaceAtIndex(int index) { return (*faces)[index]; };
+	size_t getFaceCount() { return faces->size(); };
 private:
 	Vector3F originPosition = Vector3F(0, 0, 0);
 	Vector3F eulerRotation = Vector3F(0, 0, 0);
@@ -96,8 +96,8 @@ class MyEngineSystem {
 		GLuint myEngineSysVBO;
 		GLuint vertexArrObj;
 
-		// vertex stream array, declared on heap
-		float vertexStream[1000];
+		// vertex stream vector, declared on heap
+		std::vector<float>* vertexStream = nullptr;
 
 	public:
 		MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx);
