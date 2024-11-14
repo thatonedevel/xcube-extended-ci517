@@ -182,7 +182,6 @@ void MyEngineSystem::drawTriangle2D(Vector2f pointA, Vector2f pointB, Vector2f p
 
 void MyEngineSystem::drawMeshObjects(Mesh3D mesh, Vector3F position)
 {
-	size_t streamSize = 0;
 	// purge vertex stream vector
 	// reserve enough space for the mesh's vertices to appear in the vector multiple times
 	// * 9 to get the amt of vertices needed multiplied by dimensions of position vector (3)
@@ -231,10 +230,8 @@ void MyEngineSystem::drawMeshObjects(Mesh3D mesh, Vector3F position)
 
 	std::cout << "Vertex stream filled\n";
 
-	streamSize = vertexStream->size() * sizeof(float);
-
 	// TODO: currently throws debug assertation failure (subscript out of range)
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertexStream->size(), vertexStream, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(*vertexStream), vertexStream, GL_STATIC_DRAW);
 	// get vertex attribute and enable it
 	GLuint vertexPos = glGetAttribLocation(myEngineShaderProg, "position");
 	glVertexAttribPointer(vertexPos, 3, GL_FLOAT, false, 0, 0);
@@ -242,7 +239,7 @@ void MyEngineSystem::drawMeshObjects(Mesh3D mesh, Vector3F position)
 
 	// draw the mesh
 	std::cout << "Drawing Mesh" << std::endl;
-	glDrawArrays(GL_TRIANGLES, 0, mesh.getFaceCount() * 9);
+	//glDrawArrays(GL_TRIANGLES, 0, mesh.getFaceCount() * 9);
 }
 
 Vector3F::Vector3F(float newX, float newY, float newZ)
