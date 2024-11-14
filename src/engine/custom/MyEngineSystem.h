@@ -55,7 +55,7 @@ class Mesh3D
 {
 public:
 	Mesh3D();
-	Mesh3D(std::string path);
+	Mesh3D(std::string path, Vector3F position);
 	Vector3F getEulerRotation() { return eulerRotation; };
 	Vector3F getOriginPosition() { return originPosition; };
 	Vector3F getVertexCoordinate(int index) { return (*vertices)[index]; };
@@ -103,7 +103,7 @@ class MyEngineSystem {
 		MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx);
 		~MyEngineSystem();
 		void drawTriangle2D(Vector2f, Vector2f, Vector2f);
-		void drawMeshObjects(Mesh3D, Vector3F);
+		void drawMeshObjects(Mesh3D);
 };
 
 
