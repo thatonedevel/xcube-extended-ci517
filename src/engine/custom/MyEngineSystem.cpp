@@ -124,10 +124,13 @@ Vector3F MyEngineSystem::translateWorldSpaceToDeviceSpace(Vector3F worldSpaceCoo
 	Dimension2i winDimension = gfxInstance->getCurrentWindowSize();
 	Vector2f origin = Vector2f(winDimension.w / 2, winDimension.h / 2);
 
+	// z origin = 0 at screen centre.
+
 	float offsetX = worldSpaceCoords.getX() - origin.x;
 	float offsetY = (worldSpaceCoords.getY() - origin.y) * -1;
 
 	// divide this by the values of the origin coords
+
 	Vector3F resultCoords = Vector3F(offsetX / origin.x, offsetY / origin.y, worldSpaceCoords.getZ());
 
 	return resultCoords;
@@ -180,7 +183,7 @@ void MyEngineSystem::drawTriangle2D(Vector2f pointA, Vector2f pointB, Vector2f p
 
 }
 
-void MyEngineSystem::drawMeshObjects(Mesh3D mesh, Vector3F position)
+void MyEngineSystem::drawMeshObjects(Mesh3D mesh)
 {
 	// purge vertex stream vector
 	// reserve enough space for the mesh's vertices to appear in the vector multiple times
@@ -239,7 +242,7 @@ void MyEngineSystem::drawMeshObjects(Mesh3D mesh, Vector3F position)
 
 	// draw the mesh
 	std::cout << "Drawing Mesh" << std::endl;
-	//glDrawArrays(GL_TRIANGLES, 0, mesh.getFaceCount() * 9);
+	glDrawArrays(GL_TRIANGLES, 0, mesh.getFaceCount() * 9);
 }
 
 Vector3F::Vector3F(float newX, float newY, float newZ)
@@ -323,8 +326,9 @@ Mesh3D::Mesh3D()
 	normals = new std::vector<Vector3F>();
 }
 
-Mesh3D::Mesh3D(std::string path)
+Mesh3D::Mesh3D(std::string path, Vector3F position)
 {
+	originPosition = position;
 	faces = new std::vector<Face3D>();
 	vertices = new std::vector<Vector3F>();
 	normals = new std::vector<Vector3F>();
