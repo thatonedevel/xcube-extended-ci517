@@ -34,6 +34,7 @@ MyEngineSystem::MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx)
 	// reserve space for 10000 vertices
 	//std::cout << "Vector capacity: " << vertexStream->max_size() << std::endl;
 	vertexStream->resize(3000000, 0);
+	std::cout << "Vertex stream size: " << vertexStream->size() << std::endl;
 
 	gfxInstance = gfx;
 	// create vertex array object - this stores the links between the vertex attributes and buffer objects
@@ -192,6 +193,8 @@ void MyEngineSystem::drawMeshObjects(Mesh3D mesh, Vector3F position)
 		(*vertexStream)[i] = 0;
 	}
 
+	std::cout << "Faces to render: " << mesh.getFaceCount() << std::endl;
+
 	// use GL_TRIANGLES for rendering faces
 	// produces an vector of 3n but will work immediately for meshes not consisting of single triangle strips
 	for (int faceIndex = 0; faceIndex < mesh.getFaceCount(); faceIndex++)
@@ -200,9 +203,9 @@ void MyEngineSystem::drawMeshObjects(Mesh3D mesh, Vector3F position)
 		if (faceIndex + 8 < vertexStream->size())
 		{
 			Face3D currentFace = mesh.getFaceAtIndex(faceIndex);
-			Vector3F coordA = translateWorldSpaceToDeviceSpace(mesh.getVertexCoordinate(currentFace.getVertexIndA()));
-			Vector3F coordB = translateWorldSpaceToDeviceSpace(mesh.getVertexCoordinate(currentFace.getVertexIndB()));
-			Vector3F coordC = translateWorldSpaceToDeviceSpace(mesh.getVertexCoordinate(currentFace.getVertexIndC()));
+			Vector3F coordA = translateWorldSpaceToDeviceSpace(mesh.getVertexCoordinate(currentFace.getVertexIndA() - 1));
+			Vector3F coordB = translateWorldSpaceToDeviceSpace(mesh.getVertexCoordinate(currentFace.getVertexIndB() - 1));
+			Vector3F coordC = translateWorldSpaceToDeviceSpace(mesh.getVertexCoordinate(currentFace.getVertexIndC() - 1));
 
 			// add the coordinates to the vertex stream
 			(*vertexStream)[faceIndex] = coordA.getX();
@@ -214,7 +217,7 @@ void MyEngineSystem::drawMeshObjects(Mesh3D mesh, Vector3F position)
 			(*vertexStream)[faceIndex + 5] = coordB.getZ();
 			
 			(*vertexStream)[faceIndex + 6] = coordC.getX();
-			(*vertexStream)[faceIndex = 7] = coordC.getY();
+			(*vertexStream)[faceIndex + 7] = coordC.getY();
 			(*vertexStream)[faceIndex + 8] = coordC.getZ();
 
 			std::cout << "Added face to vertex stream\n";
@@ -238,7 +241,8 @@ void MyEngineSystem::drawMeshObjects(Mesh3D mesh, Vector3F position)
 	glEnableVertexArrayAttrib(vertexArrObj, vertexPos);
 
 	// draw the mesh
-	glDrawArrays(GL_TRIANGLES, 0, vertexStream->size());
+	std::cout << "Drawing Mesh" << std::endl;
+	glDrawArrays(GL_TRIANGLES, 0, mesh.getFaceCount() * 9);
 }
 
 Vector3F::Vector3F(float newX, float newY, float newZ)
