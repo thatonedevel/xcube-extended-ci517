@@ -31,6 +31,9 @@ MyEngineSystem::MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx)
 {
 	// initialise vertex stream
 	vertexStream = new std::vector<float>();
+	// reserve space for 10000 vertices
+	//std::cout << "Vector capacity: " << vertexStream->max_size() << std::endl;
+	vertexStream->resize(3000000, 0);
 
 	gfxInstance = gfx;
 	// create vertex array object - this stores the links between the vertex attributes and buffer objects
@@ -178,35 +181,57 @@ void MyEngineSystem::drawTriangle2D(Vector2f pointA, Vector2f pointB, Vector2f p
 
 void MyEngineSystem::drawMeshObjects(Mesh3D mesh, Vector3F position)
 {
+	size_t streamSize = 0;
 	// purge vertex stream vector
-	vertexStream->clear();
+	// reserve enough space for the mesh's vertices to appear in the vector multiple times
+	// * 9 to get the amt of vertices needed multiplied by dimensions of position vector (3)
+
+	for (int i = 0; i < vertexStream->size(); i++)
+	{
+		// set element at index i to 0. vector::clear causes issues with allocation
+		(*vertexStream)[i] = 0;
+	}
 
 	// use GL_TRIANGLES for rendering faces
 	// produces an vector of 3n but will work immediately for meshes not consisting of single triangle strips
 	for (int faceIndex = 0; faceIndex < mesh.getFaceCount(); faceIndex++)
 	{
-		Face3D currentFace = mesh.getFaceAtIndex(faceIndex);
-		Vector3F coordA = translateWorldSpaceToDeviceSpace(mesh.getVertexCoordinate(currentFace.getVertexIndA()));
-		Vector3F coordB = translateWorldSpaceToDeviceSpace(mesh.getVertexCoordinate(currentFace.getVertexIndB()));
-		Vector3F coordC = translateWorldSpaceToDeviceSpace(mesh.getVertexCoordinate(currentFace.getVertexIndC()));
+		// check face can be added to vertex stream
+		if (faceIndex + 8 < vertexStream->size())
+		{
+			Face3D currentFace = mesh.getFaceAtIndex(faceIndex);
+			Vector3F coordA = translateWorldSpaceToDeviceSpace(mesh.getVertexCoordinate(currentFace.getVertexIndA()));
+			Vector3F coordB = translateWorldSpaceToDeviceSpace(mesh.getVertexCoordinate(currentFace.getVertexIndB()));
+			Vector3F coordC = translateWorldSpaceToDeviceSpace(mesh.getVertexCoordinate(currentFace.getVertexIndC()));
 
-		// add the coordinates to the vertex stream
-		vertexStream->push_back(coordA.getX());
-		vertexStream->push_back(coordA.getY());
-		vertexStream->push_back(coordA.getZ());
+			// add the coordinates to the vertex stream
+			(*vertexStream)[faceIndex] = coordA.getX();
+			(*vertexStream)[faceIndex + 1] = coordA.getY();
+			(*vertexStream)[faceIndex + 2] = coordA.getZ();
+			
+			(*vertexStream)[faceIndex + 3] = coordB.getX();
+			(*vertexStream)[faceIndex + 4] = coordB.getY();
+			(*vertexStream)[faceIndex + 5] = coordB.getZ();
+			
+			(*vertexStream)[faceIndex + 6] = coordC.getX();
+			(*vertexStream)[faceIndex = 7] = coordC.getY();
+			(*vertexStream)[faceIndex + 8] = coordC.getZ();
 
-		vertexStream->push_back(coordB.getX());
-		vertexStream->push_back(coordB.getY());
-		vertexStream->push_back(coordB.getZ());
-
-		vertexStream->push_back(coordC.getX());
-		vertexStream->push_back(coordC.getY());
-		vertexStream->push_back(coordC.getZ());
-
+			std::cout << "Added face to vertex stream\n";
+		}
+		else
+		{
+			std::cout << "Insufficient space in vertex stream for mesh of " << mesh.getFaceCount() << " tris" << std::endl;
+		}
 		// yes i know this is terrible but i can't think of anything else OXKJHGKCJH
 	}
 
-	glBufferData(GL_ARRAY_BUFFER, vertexStream->size(), &vertexStream, GL_STATIC_DRAW);
+	std::cout << "Vertex stream filled\n";
+
+	streamSize = vertexStream->size() * sizeof(float);
+
+	// TODO: currently throws debug assertation failure (subscript out of range)
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertexStream->size(), vertexStream, GL_STATIC_DRAW);
 	// get vertex attribute and enable it
 	GLuint vertexPos = glGetAttribLocation(myEngineShaderProg, "position");
 	glVertexAttribPointer(vertexPos, 3, GL_FLOAT, false, 0, 0);
