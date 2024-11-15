@@ -17,7 +17,7 @@ MyGame::MyGame() : AbstractGame(), score(0), lives(3), numKeys(5), gameWon(false
 	std::cout << "index 2: " << testVec[2] << std::endl;
 
 	// test the mesh object
-	currentMesh = new Mesh3D("C:\\Users\\alekd\\Documents\\xcube\\build\\Debug\\cubeOfXCube.obj", Vector3F(0, 0, 0));
+	currentMesh = new Mesh3D("res/cubeOfXCube.obj", Vector3F(400, 0, 300));
 	// do somthing here for a breakpoint to check mesh data has been read in correctly
 	std::cout << "Loaded mesh" << std::endl;
 }
