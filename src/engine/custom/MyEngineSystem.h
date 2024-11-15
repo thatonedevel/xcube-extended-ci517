@@ -58,7 +58,7 @@ public:
 	Mesh3D(std::string path, Vector3F position);
 	Vector3F getEulerRotation() { return eulerRotation; };
 	Vector3F getOriginPosition() { return originPosition; };
-	Vector3F getVertexCoordinate(int index) { return (*vertices)[index]; };
+	Vector3F getVertexCoordinate(int index) { return originPosition + (*vertices)[index]; };
 	size_t getVertexCount() { return vertices->size(); };
 	void moveObject(Vector3F translation);
 	void rotateYAxis(float angle) { eulerRotation = eulerRotation + Vector3F(0, angle, 0); };
