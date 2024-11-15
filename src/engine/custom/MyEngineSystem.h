@@ -4,7 +4,11 @@
 #include "../EngineCommon.h"
 #include "../GraphicsEngine.h"
 
-#define DEG2RAD 0.017453292519943295769236907684
+#define DEG2RAD 0.017453292519943295769236907684f
+
+#define SCREEN_METRE 32
+
+// 1 "metre" = 32 pixels
 
 std::vector<std::string> splitString(std::string input, char splitDelimeter);
 
@@ -58,7 +62,7 @@ public:
 	Mesh3D(std::string path, Vector3F position);
 	Vector3F getEulerRotation() { return eulerRotation; };
 	Vector3F getOriginPosition() { return originPosition; };
-	Vector3F getVertexCoordinate(int index) { return originPosition + (*vertices)[index]; };
+	Vector3F getVertexCoordinate(int index) { return originPosition + ((*vertices)[index] * SCREEN_METRE); };
 	size_t getVertexCount() { return vertices->size(); };
 	void moveObject(Vector3F translation);
 	void rotateYAxis(float angle) { eulerRotation = eulerRotation + Vector3F(0, angle, 0); };
