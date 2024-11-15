@@ -106,7 +106,7 @@ MyEngineSystem::MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx)
 	glAttachShader(myEngineShaderProg, vertexShader);
 	glAttachShader(myEngineShaderProg, fragShader);
 
-	glBindFragDataLocation(fragShader, 0, "outColor");
+	glBindFragDataLocation(myEngineShaderProg, 0, "outColor");
 	
 	glLinkProgram(myEngineShaderProg);
 	glUseProgram(myEngineShaderProg);
@@ -243,6 +243,7 @@ void MyEngineSystem::drawMeshObjects(Mesh3D mesh)
 	// draw the mesh
 	std::cout << "Drawing Mesh" << std::endl;
 	glDrawArrays(GL_TRIANGLES, 0, mesh.getFaceCount() * 9);
+	std::cout << glGetError() << std::endl;
 }
 
 Vector3F::Vector3F(float newX, float newY, float newZ)
