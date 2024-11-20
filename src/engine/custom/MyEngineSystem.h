@@ -32,6 +32,8 @@ public:
 	Vector3F operator*(float);
 	Vector3F operator/(int);
 	Vector3F operator/(float);
+	float dot(Vector3F);
+	Vector3F cross(Vector3F);
 
 private:
 	float x = 0;
@@ -102,14 +104,115 @@ class MyEngineSystem {
 
 		// vertex stream vector, declared on heap
 		std::vector<float>* vertexStream = nullptr;
+		int zDepth = 100; // absolute depth value, 100 units either side of the origin on the z axis
 
 	public:
 		MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx);
 		~MyEngineSystem();
 		void drawTriangle2D(Vector2f, Vector2f, Vector2f);
 		void drawMeshObjects(Mesh3D);
+		void setZDepth(int zVal) { zDepth = zVal; };
 };
 
+class Matrix4f { // reference https://github.com/AlmasB/tetris3d/blob/master/src/engine/math/GameMath.h
+	/*
+		4x4 Projection Matrix
+		Almas Baimagambetov
+		https://github.com/AlmasB/tetris3d/blob/master/src/engine/math/GameMath.h (accessed 15/11/2024)
+	*/
+public:
+	float m[4][4];
 
+	/**
+	* Matrix is deliberately left uninitialised because values
+	* will be rewritten anyway
+	*/
+	Matrix4f() {}
 
+	inline void loadIdentity() {
+		m[0][0] = 1.0f; m[0][1] = 0.0f; m[0][2] = 0.0f; m[0][3] = 0.0f;
+		m[1][0] = 0.0f; m[1][1] = 1.0f; m[1][2] = 0.0f; m[1][3] = 0.0f;
+		m[2][0] = 0.0f; m[2][1] = 0.0f; m[2][2] = 1.0f; m[2][3] = 0.0f;
+		m[3][0] = 0.0f; m[3][1] = 0.0f; m[3][2] = 0.0f; m[3][3] = 1.0f;
+	}
+
+	inline Matrix4f operator*(const Matrix4f& right) const {
+		Matrix4f ret;
+
+		for (unsigned int i = 0; i < 4; ++i) {
+			for (unsigned int j = 0; j < 4; ++j) {
+				ret.m[i][j] = m[i][0] * right.m[0][j] +
+					m[i][1] * right.m[1][j] +
+					m[i][2] * right.m[2][j] +
+					m[i][3] * right.m[3][j];
+			}
+		}
+
+		return ret;
+	}
+
+	void scale(float scaleX, float scaleY, float scaleZ) {
+		m[0][0] = scaleX; m[0][1] = 0.0f;   m[0][2] = 0.0f;   m[0][3] = 0.0f;
+		m[1][0] = 0.0f;   m[1][1] = scaleY; m[1][2] = 0.0f;   m[1][3] = 0.0f;
+		m[2][0] = 0.0f;   m[2][1] = 0.0f;   m[2][2] = scaleZ; m[2][3] = 0.0f;
+		m[3][0] = 0.0f;   m[3][1] = 0.0f;   m[3][2] = 0.0f;   m[3][3] = 1.0f;
+	}
+
+	void rotate(float rotateX, float rotateY, float rotateZ) {
+		Matrix4f rx, ry, rz;
+
+		float x = rotateX * DEG2RAD;
+		float y = rotateY * DEG2RAD;
+		float z = rotateZ * DEG2RAD;
+
+		rx.m[0][0] = 1.0f; rx.m[0][1] = 0.0f;	 rx.m[0][2] = 0.0f;		rx.m[0][3] = 0.0f;
+		rx.m[1][0] = 0.0f; rx.m[1][1] = cosf(x); rx.m[1][2] = -sinf(x); rx.m[1][3] = 0.0f;
+		rx.m[2][0] = 0.0f; rx.m[2][1] = sinf(x); rx.m[2][2] = cosf(x);	rx.m[2][3] = 0.0f;
+		rx.m[3][0] = 0.0f; rx.m[3][1] = 0.0f;	 rx.m[3][2] = 0.0f;		rx.m[3][3] = 1.0f;
+
+		ry.m[0][0] = cosf(y);	ry.m[0][1] = 0.0f; ry.m[0][2] = -sinf(y);	ry.m[0][3] = 0.0f;
+		ry.m[1][0] = 0.0f;		ry.m[1][1] = 1.0f; ry.m[1][2] = 0.0f;		ry.m[1][3] = 0.0f;
+		ry.m[2][0] = sinf(y);	ry.m[2][1] = 0.0f; ry.m[2][2] = cosf(y);	ry.m[2][3] = 0.0f;
+		ry.m[3][0] = 0.0f;		ry.m[3][1] = 0.0f; ry.m[3][2] = 0.0f;		ry.m[3][3] = 1.0f;
+
+		rz.m[0][0] = cosf(z); rz.m[0][1] = -sinf(z); rz.m[0][2] = 0.0f; rz.m[0][3] = 0.0f;
+		rz.m[1][0] = sinf(z); rz.m[1][1] = cosf(z);  rz.m[1][2] = 0.0f; rz.m[1][3] = 0.0f;
+		rz.m[2][0] = 0.0f;	  rz.m[2][1] = 0.0f;	 rz.m[2][2] = 1.0f; rz.m[2][3] = 0.0f;
+		rz.m[3][0] = 0.0f;	  rz.m[3][1] = 0.0f;	 rz.m[3][2] = 0.0f; rz.m[3][3] = 1.0f;
+
+		*this = rz * ry * rx;
+	}
+
+	void translate(float x, float y, float z) {
+		m[0][0] = 1.0f; m[0][1] = 0.0f; m[0][2] = 0.0f; m[0][3] = x;
+		m[1][0] = 0.0f; m[1][1] = 1.0f; m[1][2] = 0.0f; m[1][3] = y;
+		m[2][0] = 0.0f; m[2][1] = 0.0f; m[2][2] = 1.0f; m[2][3] = z;
+		m[3][0] = 0.0f; m[3][1] = 0.0f; m[3][2] = 0.0f; m[3][3] = 1.0f;
+	}
+
+	void initCameraTransform(const Vector3F& Target, const Vector3F& Up) {
+		Vector3F N = Target;
+		N = N.getUnitVector();
+		Vector3F U = Up;
+		U = U.getUnitVector();
+		U = U.cross(N);
+		Vector3F V = N.cross(U);
+
+		m[0][0] = U.getX();   m[0][1] = U.getY();   m[0][2] = U.getZ();   m[0][3] = 0.0f;
+		m[1][0] = V.getX();   m[1][1] = V.getY();   m[1][2] = V.getZ();   m[1][3] = 0.0f;
+		m[2][0] = N.getX();   m[2][1] = N.getY();   m[2][2] = N.getZ();   m[2][3] = 0.0f;
+		m[3][0] = 0.0f;  m[3][1] = 0.0f;  m[3][2] = 0.0f;  m[3][3] = 1.0f;
+	}
+
+	void setPerspectiveProjection(float fov, float width, float height, float zNear, float zFar) {
+		float ar = width / height;
+		float zRange = zNear - zFar;
+		float tanHalfFOV = tanf((fov / 2.0f) * DEG2RAD);
+
+		m[0][0] = 1.0f / (tanHalfFOV * ar); m[0][1] = 0.0f;            m[0][2] = 0.0f;          m[0][3] = 0.0;
+		m[1][0] = 0.0f;                   m[1][1] = 1.0f / tanHalfFOV; m[1][2] = 0.0f;          m[1][3] = 0.0;
+		m[2][0] = 0.0f;                   m[2][1] = 0.0f;            m[2][2] = (-zNear - zFar) / zRange; m[2][3] = 2.0f * zFar * zNear / zRange;
+		m[3][0] = 0.0f;                   m[3][1] = 0.0f;            m[3][2] = 1.0f;          m[3][3] = 0.0;
+	}
+};
 #endif
