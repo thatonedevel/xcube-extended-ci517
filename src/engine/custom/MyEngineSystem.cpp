@@ -106,10 +106,10 @@ MyEngineSystem::MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx)
 	glAttachShader(myEngineShaderProg, vertexShader);
 	glAttachShader(myEngineShaderProg, fragShader);
 
-	glBindFragDataLocation(myEngineShaderProg, 0, "outColor");
+	//glBindFragDataLocation(myEngineShaderProg, 0, "outColor");
 	
-	glLinkProgram(myEngineShaderProg);
-	glUseProgram(myEngineShaderProg);
+	//glLinkProgram(myEngineShaderProg);
+	//glUseProgram(myEngineShaderProg);
 }
 
 MyEngineSystem::~MyEngineSystem()
@@ -128,10 +128,11 @@ Vector3F MyEngineSystem::translateWorldSpaceToDeviceSpace(Vector3F worldSpaceCoo
 
 	float offsetX = worldSpaceCoords.getX() - origin.x;
 	float offsetY = (worldSpaceCoords.getY() - origin.y) * -1;
+	float offsetZ = worldSpaceCoords.getZ() - zDepth / 2; // zDepth / 2 = z axis origin
 
 	// divide this by the values of the origin coords
 
-	Vector3F resultCoords = Vector3F(offsetX / origin.x, offsetY / origin.y, worldSpaceCoords.getZ());
+	Vector3F resultCoords = Vector3F(offsetX / origin.x, offsetY / origin.y, worldSpaceCoords.getZ() / (zDepth / 2));
 
 	return resultCoords;
 }
@@ -234,15 +235,15 @@ void MyEngineSystem::drawMeshObjects(Mesh3D mesh)
 	std::cout << "Vertex stream filled\n";
 
 	// TODO: currently throws debug assertation failure (subscript out of range)
-	glBufferData(GL_ARRAY_BUFFER, sizeof(*vertexStream), vertexStream, GL_STATIC_DRAW);
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(*vertexStream), vertexStream, GL_STATIC_DRAW);
 	// get vertex attribute and enable it
-	GLuint vertexPos = glGetAttribLocation(myEngineShaderProg, "position");
-	glVertexAttribPointer(vertexPos, 3, GL_FLOAT, false, 0, 0);
-	glEnableVertexArrayAttrib(vertexArrObj, vertexPos);
+	//GLuint vertexPos = glGetAttribLocation(myEngineShaderProg, "position");
+	//glVertexAttribPointer(vertexPos, 3, GL_FLOAT, false, 0, 0);
+	//glEnableVertexArrayAttrib(vertexArrObj, vertexPos);
 
 	// draw the mesh
 	std::cout << "Drawing Mesh" << std::endl;
-	glDrawArrays(GL_TRIANGLES, 0, mesh.getFaceCount() * 9);
+	//glDrawArrays(GL_TRIANGLES, 0, mesh.getFaceCount() * 9);
 	std::cout << glGetError() << std::endl;
 }
 
@@ -302,6 +303,22 @@ Vector3F Vector3F::operator+(Vector3F& operand)
 Vector3F Vector3F::operator-(Vector3F& operand)
 {
 	return Vector3F(x - operand.getX(), y - operand.getY(), z - operand.getZ());
+}
+
+float Vector3F::dot(Vector3F other)
+{
+	// dot product
+	// lengyel. e, mathematics for game programming and computer graphics third edition (2012) course technology ptr, boston (massachussets)
+	return (x * other.getX()) + (y * other.getY()) + (z * other.getZ());
+}
+
+Vector3F Vector3F::cross(Vector3F other)
+{
+	return Vector3F(
+		(y * other.getZ()) - (z * other.getY()),
+		(z * other.getX()) - (other.getZ() - x),
+		(x * other.getY()) - (other.getX() - y)
+	);
 }
 
 float Vector3F::calculateMagnitude()
