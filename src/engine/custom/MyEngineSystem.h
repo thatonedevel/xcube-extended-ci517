@@ -117,7 +117,7 @@ class MyEngineSystem {
 class Matrix4f { // reference https://github.com/AlmasB/tetris3d/blob/master/src/engine/math/GameMath.h
 	/*
 		4x4 Projection Matrix
-		Almas Baimagambetov
+		Almas Baimagambetov (2013-2014)
 		https://github.com/AlmasB/tetris3d/blob/master/src/engine/math/GameMath.h (accessed 15/11/2024)
 	*/
 public:
