@@ -49,12 +49,14 @@ MyEngineSystem::MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx)
 	vertexShaderSource = R"glsl(
 	#version 150 core
 	in vec3 position;
+	uniform mat4 projection
 	
 	void main()
 	{
 		// gl_Position is the shader output for where to display the vertices
 		// vec4 is used to add data for the position. components can be passed individually or through a vec
-		gl_Position = vec4(position, 1.0);
+		// lengyel, e - use product of vector and matrix for projection
+		gl_Position = projection * vec4(position, 1.0);
 	}
 )glsl";
 
