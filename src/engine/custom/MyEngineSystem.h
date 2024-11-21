@@ -40,79 +40,6 @@ private:
 	float y = 0;
 	float z = 0;
 };
-struct Face3D
-{
-public:
-	Face3D(int, int, int, int);
-	int getVertexIndA() { return vertexIndA; };
-	int getVertexIndB() { return vertexIndB; };
-	int getVertexIndC() { return vertexIndC; };
-	int getNormalIndex() { return normalIndex; };
-
-private:
-	int vertexIndA;
-	int vertexIndB;
-	int vertexIndC;
-
-	int normalIndex;
-};
-
-class Mesh3D
-{
-public:
-	Mesh3D();
-	Mesh3D(std::string path, Vector3F position);
-	Vector3F getEulerRotation() { return eulerRotation; };
-	Vector3F getOriginPosition() { return originPosition; };
-	Vector3F getVertexCoordinate(int index) { return originPosition + ((*vertices)[index] * SCREEN_METRE); };
-	size_t getVertexCount() { return vertices->size(); };
-	void moveObject(Vector3F translation);
-	void rotateYAxis(float angle) { eulerRotation = eulerRotation + Vector3F(0, angle, 0); };
-	Vector3F getFaceNormal(int faceIndex);
-
-	// getters
-	Face3D getFaceAtIndex(int index) { return (*faces)[index]; };
-	size_t getFaceCount() { return faces->size(); };
-private:
-	Vector3F originPosition = Vector3F(0, 0, 0);
-	Vector3F eulerRotation = Vector3F(0, 0, 0);
-	Vector3F scale = Vector3F(1, 1, 1);
-	std::vector<Vector3F> evaluateYAxisRotation();
-
-	std::vector<Vector3F>* vertices = nullptr; // use a dynamic structure to allow for vertices to be added / removed
-	std::vector<Face3D>* faces = nullptr;
-	std::vector<Vector3F>* normals = nullptr;
-};
-
-class MyEngineSystem {
-	friend class XCube2Engine;
-	private:
-		std::shared_ptr<GraphicsEngine> gfxInstance = nullptr;
-		const char* vertexShaderSource = "";
-		const char* fragmentShaderSource = "";
-		Vector2f translateWorldSpaceToDeviceSpace(Vector2f);
-		Vector3F translateWorldSpaceToDeviceSpace(Vector3F);
-
-		// shaders
-		GLuint vertexShader;
-		GLuint fragShader;
-
-		// shader program (used to combine shaders)
-		GLuint myEngineShaderProg;
-		GLuint myEngineSysVBO;
-		GLuint vertexArrObj;
-
-		// vertex stream vector, declared on heap
-		std::vector<float>* vertexStream = nullptr;
-		int zDepth = 100; // absolute depth value, 100 units either side of the origin on the z axis
-
-	public:
-		MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx);
-		~MyEngineSystem();
-		void drawTriangle2D(Vector2f, Vector2f, Vector2f);
-		void drawMeshObjects(Mesh3D);
-		void setZDepth(int zVal) { zDepth = zVal; };
-};
 
 class Matrix4f { // reference https://github.com/AlmasB/tetris3d/blob/master/src/engine/math/GameMath.h
 	/*
@@ -214,5 +141,90 @@ public:
 		m[2][0] = 0.0f;                   m[2][1] = 0.0f;            m[2][2] = (-zNear - zFar) / zRange; m[2][3] = 2.0f * zFar * zNear / zRange;
 		m[3][0] = 0.0f;                   m[3][1] = 0.0f;            m[3][2] = 1.0f;          m[3][3] = 0.0;
 	}
+};
+
+class Camera
+{
+private:
+	float fieldOfView = 0;
+	float near = 0;
+	float far = 0;
+	Vector3F pos = Vector3F(0, 0, 0);
+public:
+	Camera(Vector3F position, float fov, float nearPlane, float farPlane);
+};
+
+struct Face3D
+{
+public:
+	Face3D(int, int, int, int);
+	int getVertexIndA() { return vertexIndA; };
+	int getVertexIndB() { return vertexIndB; };
+	int getVertexIndC() { return vertexIndC; };
+	int getNormalIndex() { return normalIndex; };
+
+private:
+	int vertexIndA;
+	int vertexIndB;
+	int vertexIndC;
+
+	int normalIndex;
+};
+
+class Mesh3D
+{
+public:
+	Mesh3D();
+	Mesh3D(std::string path, Vector3F position);
+	Vector3F getEulerRotation() { return eulerRotation; };
+	Vector3F getOriginPosition() { return originPosition; };
+	Vector3F getVertexCoordinate(int index) { return originPosition + ((*vertices)[index] * SCREEN_METRE); };
+	size_t getVertexCount() { return vertices->size(); };
+	void moveObject(Vector3F translation);
+	void rotateYAxis(float angle) { eulerRotation = eulerRotation + Vector3F(0, angle, 0); };
+	Vector3F getFaceNormal(int faceIndex);
+
+	// getters
+	Face3D getFaceAtIndex(int index) { return (*faces)[index]; };
+	size_t getFaceCount() { return faces->size(); };
+private:
+	Vector3F originPosition = Vector3F(0, 0, 0);
+	Vector3F eulerRotation = Vector3F(0, 0, 0);
+	Vector3F scale = Vector3F(1, 1, 1);
+	std::vector<Vector3F> evaluateYAxisRotation();
+
+	std::vector<Vector3F>* vertices = nullptr; // use a dynamic structure to allow for vertices to be added / removed
+	std::vector<Face3D>* faces = nullptr;
+	std::vector<Vector3F>* normals = nullptr;
+};
+
+class MyEngineSystem {
+	friend class XCube2Engine;
+	private:
+		std::shared_ptr<GraphicsEngine> gfxInstance = nullptr;
+		const char* vertexShaderSource = "";
+		const char* fragmentShaderSource = "";
+		Vector2f translateWorldSpaceToDeviceSpace(Vector2f);
+		Vector3F translateWorldSpaceToDeviceSpace(Vector3F);
+
+		// shaders
+		GLuint vertexShader;
+		GLuint fragShader;
+
+		// shader program (used to combine shaders)
+		GLuint myEngineShaderProg;
+		GLuint myEngineSysVBO;
+		GLuint vertexArrObj;
+
+		// vertex stream vector, declared on heap
+		std::vector<float>* vertexStream = nullptr;
+		int zDepth = 100; // absolute depth value, 100 units either side of the origin on the z axis
+
+	public:
+		MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx);
+		~MyEngineSystem();
+		void drawTriangle2D(Vector2f, Vector2f, Vector2f);
+		void drawMeshObjects(Mesh3D);
+		void setZDepth(int zVal) { zDepth = zVal; };
 };
 #endif
