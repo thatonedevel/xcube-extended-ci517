@@ -150,6 +150,7 @@ private:
 	float near = 0;
 	float far = 0;
 	Vector3F pos = Vector3F(0, 0, 0);
+	Matrix4f cameraMat = Matrix4f();
 public:
 	Camera(Vector3F position, float fov, float nearPlane, float farPlane);
 };
