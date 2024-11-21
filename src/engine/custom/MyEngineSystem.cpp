@@ -118,6 +118,16 @@ MyEngineSystem::~MyEngineSystem()
 	delete vertexStream;
 }
 
+Camera::Camera(Vector3F position, float fov, float nearPlane, float farPlane)
+{
+	// creates a view frustum as this is no longer implemented in opengl
+	pos = position;
+	fieldOfView = fov;
+	// set up projection matrix for the camera
+	cameraMat.initCameraTransform(pos, Vector3F(0, -1, 0));
+
+}
+
 Vector3F MyEngineSystem::translateWorldSpaceToDeviceSpace(Vector3F worldSpaceCoords)
 {
 	// get the window size to determine ratio (device space has 0,0 as the centre)
