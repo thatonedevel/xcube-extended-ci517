@@ -225,7 +225,7 @@ class MyEngineSystem {
 		MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx);
 		~MyEngineSystem();
 		void drawTriangle2D(Vector2f, Vector2f, Vector2f);
-		void drawMeshObjects(Mesh3D);
+		void drawMeshObjects(Camera, Mesh3D);
 		void setZDepth(int zVal) { zDepth = zVal; };
 };
 #endif
