@@ -141,6 +141,19 @@ public:
 		m[2][0] = 0.0f;                   m[2][1] = 0.0f;            m[2][2] = (-zNear - zFar) / zRange; m[2][3] = 2.0f * zFar * zNear / zRange;
 		m[3][0] = 0.0f;                   m[3][1] = 0.0f;            m[3][2] = 1.0f;          m[3][3] = 0.0;
 	}
+
+	std::vector<float> getMatAs1dArray()
+	{
+		std::vector<float> mat = {};
+
+		for (int row = 0; row < 4; row++)
+		{
+			for (int col = 0; col < 4; col++)
+			{
+				mat.push_back(m[row][col]);
+			}
+		}
+	}
 };
 
 class Camera
@@ -150,9 +163,9 @@ private:
 	float near = 0;
 	float far = 0;
 	Vector3F pos = Vector3F(0, 0, 0);
-	Matrix4f cameraMat = Matrix4f();
 public:
 	Camera(Vector3F position, float fov, float nearPlane, float farPlane);
+	Matrix4f cameraMat = Matrix4f();
 };
 
 struct Face3D
