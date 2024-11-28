@@ -12,6 +12,8 @@
 
 std::vector<std::string> splitString(std::string input, char splitDelimeter);
 
+std::string joinString(std::string joinedStrs[], std::string joinChar);
+
 struct Vector3F
 {
 public:
@@ -142,7 +144,7 @@ public:
 		m[3][0] = 0.0f;                   m[3][1] = 0.0f;            m[3][2] = 1.0f;          m[3][3] = 0.0;
 	}
 
-	std::vector<float> getMatAs1dArray()
+	std::vector<GLfloat> getMatAs1dArray()
 	{
 		std::vector<float> mat = {};
 
