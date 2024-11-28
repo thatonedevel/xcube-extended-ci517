@@ -27,6 +27,23 @@ std::vector<std::string> splitString(std::string input, char splitDelimeter)
 	return components;
 }
 
+std::string joinString(std::string joinedStrs[], std::string joinSeq="")
+{
+	/* 
+		Joins the array joinedStrs into a single string,
+		with each entry of joinedStrs seperated
+		in the final string by the string joinSeq
+	*/
+	std::string result = "";
+
+	for (int i = 0; i < sizeof((*joinedStrs)) / sizeof(std::string); i++)
+	{
+		result += joinedStrs[i] + joinSeq;
+	}
+
+	return result;
+}
+
 MyEngineSystem::MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx)
 {
 	// initialise vertex stream
@@ -127,7 +144,7 @@ Camera::Camera(Vector3F position, float fov, float nearPlane, float farPlane)
 	fieldOfView = fov;
 	// set up projection matrix for the camera
 	cameraMat.initCameraTransform(pos, Vector3F(0, -1, 0));
-
+	//cameraMat.setPerspectiveProjection(fov, )
 }
 
 Vector3F MyEngineSystem::translateWorldSpaceToDeviceSpace(Vector3F worldSpaceCoords)
@@ -196,11 +213,22 @@ void MyEngineSystem::drawTriangle2D(Vector2f pointA, Vector2f pointB, Vector2f p
 
 }
 
-void MyEngineSystem::drawMeshObjects(Mesh3D mesh)
+void MyEngineSystem::drawMeshObjects(Camera renderCam, Mesh3D mesh)
 {
 	// purge vertex stream vector
 	// reserve enough space for the mesh's vertices to appear in the vector multiple times
 	// * 9 to get the amt of vertices needed multiplied by dimensions of position vector (3)
+	GLfloat matrix[16] = {};
+	
+	int ind = 0;
+	for (int row = 0; row < 4; row++)
+	{
+		for (int col = 0; col < 4; col++)
+		{
+			matrix[ind] = renderCam.cameraMat.m[row][col];
+			ind++;
+		}
+	}
 
 	for (int i = 0; i < vertexStream->size(); i++)
 	{
@@ -247,15 +275,17 @@ void MyEngineSystem::drawMeshObjects(Mesh3D mesh)
 	std::cout << "Vertex stream filled\n";
 
 	// TODO: currently throws debug assertation failure (subscript out of range)
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(*vertexStream), vertexStream, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(*vertexStream), vertexStream, GL_STATIC_DRAW);
 	// get vertex attribute and enable it
-	//GLuint vertexPos = glGetAttribLocation(myEngineShaderProg, "position");
-	//glVertexAttribPointer(vertexPos, 3, GL_FLOAT, false, 0, 0);
-	//glEnableVertexArrayAttrib(vertexArrObj, vertexPos);
+	GLuint vertexPos = glGetAttribLocation(myEngineShaderProg, "position");
+	GLuint matrixPos = glGetUniformLocation(myEngineShaderProg, "projection");
+	glVertexAttribPointer(vertexPos, 3, GL_FLOAT, false, 0, 0);
+	glUniformMatrix4fv(matrixPos, 1, GL_FALSE, matrix);
+	glEnableVertexArrayAttrib(vertexArrObj, vertexPos);
 
 	// draw the mesh
 	std::cout << "Drawing Mesh" << std::endl;
-	//glDrawArrays(GL_TRIANGLES, 0, mesh.getFaceCount() * 9);
+	glDrawArrays(GL_TRIANGLES, 0, mesh.getFaceCount() * 9);
 	std::cout << glGetError() << std::endl;
 }
 
