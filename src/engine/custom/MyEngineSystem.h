@@ -166,7 +166,7 @@ private:
 	float far = 0;
 	Vector3F pos = Vector3F(0, 0, 0);
 public:
-	Camera(Vector3F position, float fov, float nearPlane, float farPlane);
+	Camera(Vector3F position, float fov, Dimension2i winSize, float nearPlane, float farPlane);
 	Matrix4f cameraMat = Matrix4f();
 };
 
