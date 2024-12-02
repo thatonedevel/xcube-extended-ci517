@@ -18,6 +18,7 @@ MyGame::MyGame() : AbstractGame(), score(0), lives(3), numKeys(5), gameWon(false
 	std::cout << "index 1: " << testVec[1] << std::endl;
 	std::cout << "index 2: " << testVec[2] << std::endl;
 
+	mySystem->addCamera(Camera(Vector3F(0, 0, 0), 60, gfx->getCurrentWindowSize(), 5, 100));
 	// test the mesh object
 	currentMesh = new Mesh3D("res/cubeOfXCube.obj", Vector3F(400, 300, 100));
 	// do somthing here for a breakpoint to check mesh data has been read in correctly
@@ -37,7 +38,7 @@ void MyGame::update() {
 }
 
 void MyGame::render() {
-	mySystem->drawMeshObjects(*currentMesh);
+	mySystem->drawMeshObjects(0, *currentMesh);
 }
 
 void MyGame::renderUI() {
