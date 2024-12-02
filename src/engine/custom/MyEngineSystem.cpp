@@ -46,96 +46,80 @@ std::string joinString(std::string joinedStrs[], std::string joinSeq="")
 
 MyEngineSystem::MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx)
 {
+	GLint compileStatus = 0;
+	std::string tmpSource = "";
 	// initialise vertex stream
 	vertexStream = new std::vector<float>();
+	renderCameras = new std::vector<Camera>();
 	// reserve space for 10000 vertices
 	//std::cout << "Vector capacity: " << vertexStream->max_size() << std::endl;
 	vertexStream->resize(3000000, 0);
 	std::cout << "Vertex stream size: " << vertexStream->size() << std::endl;
 
 	gfxInstance = gfx;
-	// create vertex array object - this stores the links between the vertex attributes and buffer objects
-	glGenVertexArrays(1, &vertexArrObj);
-	glBindVertexArray(vertexArrObj);
-	// generate the buffer and bind it
-	glGenBuffers(1, &myEngineSysVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, myEngineSysVBO);
+	// load in the shaders
+	std::ifstream vertShaderFile = std::ifstream("res/xcubeVertexShader.vs");
+	std::string shaderLine = "";
 
-	// set up vertex shaders (taken from open.gl)
-	// version no is for the glsl version (i.e. 150)
-	vertexShaderSource = R"glsl(
-	#version 150 core
-	in vec3 position;
-	uniform mat4 projection
-	
-	void main()
+	while (std::getline(vertShaderFile, shaderLine))
 	{
-		// gl_Position is the shader output for where to display the vertices
-		// vec4 is used to add data for the position. components can be passed individually or through a vec
-		// lengyel, e - use product of vector and matrix for projection
-		gl_Position = projection * vec4(position, 1.0);
+		tmpSource += shaderLine;
 	}
-)glsl";
+	vertexShaderSource = tmpSource.c_str();
 
-	// fragment shader
-	// needs output of the final colour (outColor)
-	// uses vec4 for colour data (rgba)
-	// use fragment shader to control shape colours
-	fragmentShaderSource = R"glsl(
-	# version 150 core
-	out vec4 outColor;
-
-	void main()
-	{
-		outColor = vec4(1.0, 1.0, 1.0, 1.0);
-	}
-)glsl";
-
-	// compile the shaders - create a shader object, then bind the shader source to it
-	// memory is handled in the same way as it is for vertex buffer objects
-	vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	fragShader = glCreateShader(GL_FRAGMENT_SHADER);
-
-	// bind shader source to the shader objects
-	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-	glShaderSource(fragShader, 1, &fragmentShaderSource, NULL);
-
-	// compile the shaders
-	glCompileShader(vertexShader);
-
-	// check for errors
-	GLint res;
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &res);
-
-	if (res == GL_TRUE)
-	{
-		std::cout << "Vertex shader compiled successfully\n";
-	}
-
-	glCompileShader(fragShader);
-	glGetShaderiv(fragShader, GL_COMPILE_STATUS, &res);
-	if (res == GL_TRUE)
-	{
-		std::cout << "Fragment shader compiled successfully\n";
-	}
-
-	// attach the shaders to the program
+	// init shaders
+	std::cout << "Creating Shader Program...\n";
 	myEngineShaderProg = glCreateProgram();
 
-	glAttachShader(myEngineShaderProg, vertexShader);
-	glAttachShader(myEngineShaderProg, fragShader);
-
-	//glBindFragDataLocation(myEngineShaderProg, 0, "outColor");
+	std::cout << "Creating Vertex Shader...\n";
+	vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	std::cout << "Vertex shader initialised with code " << glGetError() << "\n";
 	
-	//glLinkProgram(myEngineShaderProg);
-	//glUseProgram(myEngineShaderProg);
+	std::cout << "Creating Fragment Shader...\n";
+	fragShader = glCreateShader(GL_FRAGMENT_SHADER);
+	std::cout << "Fragment Shader initialised with code " << glGetError() << "\n";
+
+	// inject shader source code
+	std::cout << "Adding Vertex Shader source...\n";
+	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+	std::cout << "Shader source added with code " << glGetError() << "\n";
+	
+	std::cout << "Adding Fragment Shader source...\n";
+	glShaderSource(fragShader, 1, &fragmentShaderSource, NULL);
+	std::cout << "Shader source added with code " << glGetError() << "\n";
+
+	std::cout << "Compiling Vertex Shader...\n";
+	glCompileShader(vertexShader);
+	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &compileStatus);
+
+	if (compileStatus == GL_TRUE) std::cout << "Vertex Shader compiled successfully\n";
+	else std::cout << "Compilation error for Vertex Shader\n";
+
+	// fragment shader
+	std::cout << "Compiling Fragment Shader...\n";
+	glCompileShader(fragShader);
+	glGetShaderiv(fragShader, GL_COMPILE_STATUS, &compileStatus);
+	if (compileStatus == GL_TRUE) std::cout << "Fragment Shader compiled successfully\n";
+	else std::cout << "Compilation error for Fragment Shader\n";
+
+	// add shaders to program, then link it and tell opengl to use this program
+	std::cout << "Adding shaders to engine program...\n";
+	glAttachShader(myEngineShaderProg, vertexShader);
+	std::cout << "Vertex Shader added to program with code " << glGetError() << "\n";
+	glAttachShader(myEngineShaderProg, fragShader);
+	std::cout << "Fragment Shader added to program with code " << glGetError() << "\n";
+
 }
 
 MyEngineSystem::~MyEngineSystem()
 {
 	// subsystem destructor
 	delete vertexStream;
+	delete renderCameras;
 }
+
+void MyEngineSystem::addCamera(Camera cam) { renderCameras->push_back(cam); };
+Camera MyEngineSystem::getCamera(int camIndex) { return (*renderCameras)[camIndex]; };
 
 Camera::Camera(Vector3F position, float fov, Dimension2i winDimensions, float nearPlane, float farPlane)
 {
@@ -213,7 +197,7 @@ void MyEngineSystem::drawTriangle2D(Vector2f pointA, Vector2f pointB, Vector2f p
 
 }
 
-void MyEngineSystem::drawMeshObjects(Camera renderCam, Mesh3D mesh)
+void MyEngineSystem::drawMeshObjects(int camIndex, Mesh3D mesh)
 {
 	// purge vertex stream vector
 	// reserve enough space for the mesh's vertices to appear in the vector multiple times
@@ -225,7 +209,7 @@ void MyEngineSystem::drawMeshObjects(Camera renderCam, Mesh3D mesh)
 	{
 		for (int col = 0; col < 4; col++)
 		{
-			matrix[ind] = renderCam.cameraMat.m[row][col];
+			matrix[ind] = (*renderCameras)[camIndex].cameraMat.m[row][col];
 			ind++;
 		}
 	}
@@ -277,7 +261,7 @@ void MyEngineSystem::drawMeshObjects(Camera renderCam, Mesh3D mesh)
 	// TODO: currently throws debug assertation failure (subscript out of range)
 	glBufferData(GL_ARRAY_BUFFER, sizeof(*vertexStream), vertexStream, GL_STATIC_DRAW);
 	// get vertex attribute and enable it
-	GLuint vertexPos = glGetAttribLocation(myEngineShaderProg, "position");
+	GLuint vertexPos = glGetAttribLocation(myEngineShaderProg, "position"); // error ?
 	GLuint matrixPos = glGetUniformLocation(myEngineShaderProg, "projection");
 	glVertexAttribPointer(vertexPos, 3, GL_FLOAT, false, 0, 0);
 	glUniformMatrix4fv(matrixPos, 1, GL_FALSE, matrix);
