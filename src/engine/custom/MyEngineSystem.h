@@ -89,7 +89,7 @@ public:
 
 	void rotate(float rotateX, float rotateY, float rotateZ) {
 		Matrix4f rx, ry, rz;
-
+		 
 		float x = rotateX * DEG2RAD;
 		float y = rotateY * DEG2RAD;
 		float z = rotateZ * DEG2RAD;
@@ -236,11 +236,16 @@ class MyEngineSystem {
 		std::vector<float>* vertexStream = nullptr;
 		int zDepth = 100; // absolute depth value, 100 units either side of the origin on the z axis
 
+		// cameras that can be used for rendering
+		std::vector<Camera>* renderCameras = nullptr;
+
 	public:
 		MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx);
 		~MyEngineSystem();
 		void drawTriangle2D(Vector2f, Vector2f, Vector2f);
-		void drawMeshObjects(Camera, Mesh3D);
+		void drawMeshObjects(int camIndex, Mesh3D);
 		void setZDepth(int zVal) { zDepth = zVal; };
+		void addCamera(Camera cam);
+		Camera getCamera(int camIndex);
 };
 #endif
