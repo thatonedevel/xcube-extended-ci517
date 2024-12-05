@@ -56,6 +56,15 @@ MyEngineSystem::MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx)
 	//std::cout << "Vector capacity: " << vertexStream->max_size() << std::endl;
 	vertexStream->resize(3000000, 0);
 	std::cout << "Vertex stream size: " << vertexStream->size() << std::endl;
+	fragmentShaderSource = R"glsl(
+#version 150 core
+
+out vec4 outColor;
+
+void main()
+{
+    outColor = vec4(1.0, 1.0, 1.0, 1.0);
+})glsl";
 
 	gfxInstance = gfx;
 	// load in the shaders
@@ -72,7 +81,7 @@ MyEngineSystem::MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx)
 
 	while (std::getline(vertShaderFile, shaderLine))
 	{
-		tmpSource += shaderLine;
+		tmpSource += shaderLine + "\n";
 	}
 	vertexShaderSource = tmpSource.c_str();
 	vertShaderFile.close();
@@ -115,16 +124,6 @@ MyEngineSystem::MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx)
 	if (compileStatus == GL_TRUE) 
 	{ 
 		std::cout << "Vertex Shader compiled successfully\n";
-	}
-	else
-	{
-		GLsizei logStrLen = 0;
-		std::cout << "Compilation error for Vertex Shader\n";
-		glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &compileLogLen);
-		GLchar* log = new char[compileLogLen];
-		glGetShaderInfoLog(vertexShader, compileLogLen, &logStrLen, log);
-		std::cout << "Log is as follows:\n";
-		std::cout << log;
 	}
 
 	// fragment shader
