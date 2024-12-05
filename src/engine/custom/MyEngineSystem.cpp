@@ -46,6 +46,7 @@ std::string joinString(std::string joinedStrs[], std::string joinSeq="")
 
 MyEngineSystem::MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx)
 {
+	GLint compileLogLen = 0;
 	GLint compileStatus = 0;
 	std::string tmpSource = "";
 	// initialise vertex stream
@@ -58,7 +59,15 @@ MyEngineSystem::MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx)
 
 	gfxInstance = gfx;
 	// load in the shaders
-	std::ifstream vertShaderFile = std::ifstream("res/xcubeVertexShader.vs");
+	std::ifstream vertShaderFile = std::ifstream("res/xcubeVertShader.vs");
+	if (!vertShaderFile.fail())
+	{
+		std::cout << "Vertex Shader Loaded from external file\n";
+	}
+	else
+	{
+		std::cout << "Vertex Shader loading failed\n";
+	}
 	std::string shaderLine = "";
 
 	while (std::getline(vertShaderFile, shaderLine))
@@ -66,6 +75,17 @@ MyEngineSystem::MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx)
 		tmpSource += shaderLine;
 	}
 	vertexShaderSource = tmpSource.c_str();
+	vertShaderFile.close();
+
+	// create buffer objects
+	std::cout << "Creating Vertex Buffer Object...\n";
+	glGenBuffers(1, &myEngineSysVBO);
+	std::cout << "";
+	glGenVertexArrays(1, &vertexArrObj);
+
+	std::cout << "Binding Vertex Array Object & Vertex Buffer Object...\n";
+	glBindBuffer(GL_ARRAY_BUFFER, myEngineSysVBO);
+	glBindVertexArray(vertexArrObj);
 
 	// init shaders
 	std::cout << "Creating Shader Program...\n";
@@ -92,8 +112,20 @@ MyEngineSystem::MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx)
 	glCompileShader(vertexShader);
 	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &compileStatus);
 
-	if (compileStatus == GL_TRUE) std::cout << "Vertex Shader compiled successfully\n";
-	else std::cout << "Compilation error for Vertex Shader\n";
+	if (compileStatus == GL_TRUE) 
+	{ 
+		std::cout << "Vertex Shader compiled successfully\n";
+	}
+	else
+	{
+		GLsizei logStrLen = 0;
+		std::cout << "Compilation error for Vertex Shader\n";
+		glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &compileLogLen);
+		GLchar* log = new char[compileLogLen];
+		glGetShaderInfoLog(vertexShader, compileLogLen, &logStrLen, log);
+		std::cout << "Log is as follows:\n";
+		std::cout << log;
+	}
 
 	// fragment shader
 	std::cout << "Compiling Fragment Shader...\n";
@@ -109,6 +141,10 @@ MyEngineSystem::MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx)
 	glAttachShader(myEngineShaderProg, fragShader);
 	std::cout << "Fragment Shader added to program with code " << glGetError() << "\n";
 
+	std::cout << "Linking Shader Program...\n";
+	glLinkProgram(myEngineShaderProg);
+	std::cout << "Shader Program linked with code " << glGetError() << "\n";
+	glUseProgram(myEngineShaderProg);
 }
 
 MyEngineSystem::~MyEngineSystem()
