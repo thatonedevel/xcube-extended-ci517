@@ -163,7 +163,14 @@ Camera::Camera(Vector3F position, float fov, Dimension2i winDimensions, float ne
 	fieldOfView = fov;
 	// set up projection matrix for the camera
 	cameraMat.initCameraTransform(pos, Vector3F(0, -1, 0));
-	cameraMat.setPerspectiveProjection(fov, winDimensions.w, winDimensions.h, nearPlane, farPlane);
+	//cameraMat.setPerspectiveProjection(fov, winDimensions.w, winDimensions.h, nearPlane, farPlane);
+	// set up pixel positions for frustum planes
+	near = nearPlane;
+	far = farPlane;
+	left = 0;
+	top = 0;
+	bottom = winDimensions.h;
+	right = winDimensions.w;
 }
 
 Vector3F MyEngineSystem::translateWorldSpaceToDeviceSpace(Vector3F worldSpaceCoords)
@@ -296,10 +303,29 @@ void MyEngineSystem::drawMeshObjects(int camIndex, Mesh3D mesh)
 	// TODO: currently throws debug assertation failure (subscript out of range)
 	glBufferData(GL_ARRAY_BUFFER, sizeof(*vertexStream), vertexStream, GL_STATIC_DRAW);
 	// get vertex attribute and enable it
-	GLuint vertexPos = glGetAttribLocation(myEngineShaderProg, "position"); // error ?
-	GLuint matrixPos = glGetUniformLocation(myEngineShaderProg, "projection");
+	GLuint vertexPos = glGetAttribLocation(myEngineShaderProg, "worldSpacePosition"); // error ?
+	//GLuint matrixPos = glGetUniformLocation(myEngineShaderProg, "projection");
+	GLuint leftFrustumPos = glGetUniformLocation(myEngineShaderProg, "frustumLeft");
+	GLuint rightFrustumPos = glGetUniformLocation(myEngineShaderProg, "frustumRight");
+	GLuint topFrustumPos = glGetUniformLocation(myEngineShaderProg, "frustumTop");
+	GLuint bottomFrustumPos = glGetUniformLocation(myEngineShaderProg, "frustumBottom");
+	GLuint nearPlanePos = glGetUniformLocation(myEngineShaderProg, "nearPlaneDist");
+	GLuint farPlanePos = glGetUniformLocation(myEngineShaderProg, "farPlaneDist");
+
+	GLuint cameraSpacePos = glGetUniformLocation(myEngineShaderProg, "cameraPos");
+	GLuint cameraFOVPos = glGetUniformLocation(myEngineShaderProg, "cameraFOV");
+
 	glVertexAttribPointer(vertexPos, 3, GL_FLOAT, false, 0, 0);
-	glUniformMatrix4fv(matrixPos, 1, GL_FALSE, matrix);
+	//glUniformMatrix4fv(matrixPos, 1, GL_FALSE, matrix);
+
+	// upload camera values to shader
+	glUniform1f(leftFrustumPos, (*renderCameras)[camIndex].getLeftPlane());
+	glUniform1f(rightFrustumPos, (*renderCameras)[camIndex].getRightPlane());
+	glUniform1f(topFrustumPos, (*renderCameras)[camIndex].getTopPlane());
+	glUniform1f(bottomFrustumPos, (*renderCameras)[camIndex].getBottomPlane());
+	glUniform1f(nearPlanePos, (*renderCameras)[camIndex].getNearPlane());
+	glUniform1f(farPlanePos, (*renderCameras)[camIndex].getFarPlane());
+
 	glEnableVertexArrayAttrib(vertexArrObj, vertexPos);
 
 	// draw the mesh
