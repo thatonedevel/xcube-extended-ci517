@@ -6,7 +6,7 @@
 
 #define DEG2RAD 0.017453292519943295769236907684f
 
-#define SCREEN_METRE 32
+#define SCREEN_METRE 100
 
 // 1 "metre" = 32 pixels
 
@@ -164,10 +164,22 @@ private:
 	float fieldOfView = 0;
 	float near = 0;
 	float far = 0;
+	float left = 0;
+	float right = 0;
+	float top = 0;
+	float bottom = 0;
 	Vector3F pos = Vector3F(0, 0, 0);
 public:
 	Camera(Vector3F position, float fov, Dimension2i winSize, float nearPlane, float farPlane);
 	Matrix4f cameraMat = Matrix4f();
+
+	// getter methods for camera info
+	float getFOV() { return fieldOfView; };
+	float getNearPlane() { return near; };
+	float getFarPlane() { return far; };
+	float getTopPlane() { return top; };
+	float getBottomPlane() { return bottom; };
+	Vector3F getPos() { return pos; };
 };
 
 struct Face3D
