@@ -177,6 +177,8 @@ public:
 	float getFOV() { return fieldOfView; };
 	float getNearPlane() { return near; };
 	float getFarPlane() { return far; };
+	float getLeftPlane() { return left; };
+	float getRightPlane() { return right; };
 	float getTopPlane() { return top; };
 	float getBottomPlane() { return bottom; };
 	Vector3F getPos() { return pos; };
