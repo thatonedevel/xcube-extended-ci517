@@ -172,6 +172,7 @@ private:
 public:
 	Camera(Vector3F position, float fov, Dimension2i winSize, float nearPlane, float farPlane);
 	Matrix4f cameraMat = Matrix4f();
+	Matrix4f viewMat = Matrix4f();
 
 	// getter methods for camera info
 	float getFOV() { return fieldOfView; };
@@ -208,11 +209,12 @@ public:
 	Mesh3D(std::string path, Vector3F position);
 	Vector3F getEulerRotation() { return eulerRotation; };
 	Vector3F getOriginPosition() { return originPosition; };
-	Vector3F getVertexCoordinate(int index) { return originPosition + ((*vertices)[index] * SCREEN_METRE); };
+	Vector3F getVertexCoordinate(int index) { return originPosition + (*vertices)[index]; };
 	size_t getVertexCount() { return vertices->size(); };
 	void moveObject(Vector3F translation);
 	void rotateYAxis(float angle) { eulerRotation = eulerRotation + Vector3F(0, angle, 0); };
 	Vector3F getFaceNormal(int faceIndex);
+	Matrix4f modelMat = Matrix4f();
 
 	// getters
 	Face3D getFaceAtIndex(int index) { return (*faces)[index]; };
