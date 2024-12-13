@@ -19,7 +19,7 @@ struct Vector3F
 public:
 	Vector3F(float, float, float);
 
-	// coord getter methods 
+	// coord getter methods
 	float getX() { return x; };
 	float getY() { return y; };
 	float getZ() { return z; };
@@ -28,7 +28,7 @@ public:
 	Vector3F getUnitVector();
 
 	// math operations - reference https://learn.microsoft.com/en-us/cpp/cpp/operator-overloading?view=msvc-170
-	Vector3F operator+( Vector3F& );
+	Vector3F operator+(Vector3F&);
 	Vector3F operator-(Vector3F&);
 	Vector3F operator*(int);
 	Vector3F operator*(float);
@@ -89,7 +89,7 @@ public:
 
 	void rotate(float rotateX, float rotateY, float rotateZ) {
 		Matrix4f rx, ry, rz;
-		 
+
 		float x = rotateX * DEG2RAD;
 		float y = rotateY * DEG2RAD;
 		float z = rotateZ * DEG2RAD;
@@ -172,7 +172,6 @@ private:
 public:
 	Camera(Vector3F position, float fov, Dimension2i winSize, float nearPlane, float farPlane);
 	Matrix4f cameraMat = Matrix4f();
-	Matrix4f viewMat = Matrix4f();
 
 	// getter methods for camera info
 	float getFOV() { return fieldOfView; };
@@ -209,12 +208,11 @@ public:
 	Mesh3D(std::string path, Vector3F position);
 	Vector3F getEulerRotation() { return eulerRotation; };
 	Vector3F getOriginPosition() { return originPosition; };
-	Vector3F getVertexCoordinate(int index) { return originPosition + (*vertices)[index]; };
+	Vector3F getVertexCoordinate(int index) { return originPosition + ((*vertices)[index] * SCREEN_METRE); };
 	size_t getVertexCount() { return vertices->size(); };
 	void moveObject(Vector3F translation);
 	void rotateYAxis(float angle) { eulerRotation = eulerRotation + Vector3F(0, angle, 0); };
 	Vector3F getFaceNormal(int faceIndex);
-	Matrix4f modelMat = Matrix4f();
 
 	// getters
 	Face3D getFaceAtIndex(int index) { return (*faces)[index]; };
@@ -232,36 +230,36 @@ private:
 
 class MyEngineSystem {
 	friend class XCube2Engine;
-	private:
-		std::shared_ptr<GraphicsEngine> gfxInstance = nullptr;
-		const char* vertexShaderSource = "";
-		const char* fragmentShaderSource = "";
-		Vector2f translateWorldSpaceToDeviceSpace(Vector2f);
-		Vector3F translateWorldSpaceToDeviceSpace(Vector3F);
+private:
+	std::shared_ptr<GraphicsEngine> gfxInstance = nullptr;
+	const char* vertexShaderSource = "";
+	const char* fragmentShaderSource = "";
+	Vector2f translateWorldSpaceToDeviceSpace(Vector2f);
+	Vector3F translateWorldSpaceToDeviceSpace(Vector3F);
 
-		// shaders
-		GLuint vertexShader;
-		GLuint fragShader;
+	// shaders
+	GLuint vertexShader;
+	GLuint fragShader;
 
-		// shader program (used to combine shaders)
-		GLuint myEngineShaderProg;
-		GLuint myEngineSysVBO;
-		GLuint vertexArrObj;
+	// shader program (used to combine shaders)
+	GLuint myEngineShaderProg;
+	GLuint myEngineSysVBO;
+	GLuint vertexArrObj;
 
-		// vertex stream vector, declared on heap
-		std::vector<float>* vertexStream = nullptr;
-		int zDepth = 100; // absolute depth value, 100 units either side of the origin on the z axis
+	// vertex stream vector, declared on heap
+	std::vector<float>* vertexStream = nullptr;
+	int zDepth = 100; // absolute depth value, 100 units either side of the origin on the z axis
 
-		// cameras that can be used for rendering
-		std::vector<Camera>* renderCameras = nullptr;
+	// cameras that can be used for rendering
+	std::vector<Camera>* renderCameras = nullptr;
 
-	public:
-		MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx);
-		~MyEngineSystem();
-		void drawTriangle2D(Vector2f, Vector2f, Vector2f);
-		void drawMeshObjects(int camIndex, Mesh3D);
-		void setZDepth(int zVal) { zDepth = zVal; };
-		void addCamera(Camera cam);
-		Camera getCamera(int camIndex);
+public:
+	MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx);
+	~MyEngineSystem();
+	void drawTriangle2D(Vector2f, Vector2f, Vector2f);
+	void drawMeshObjects(int camIndex, Mesh3D);
+	void setZDepth(int zVal) { zDepth = zVal; };
+	void addCamera(Camera cam);
+	Camera getCamera(int camIndex);
 };
 #endif
