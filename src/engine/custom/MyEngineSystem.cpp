@@ -27,9 +27,9 @@ std::vector<std::string> splitString(std::string input, char splitDelimeter)
 	return components;
 }
 
-std::string joinString(std::string joinedStrs[], std::string joinSeq="")
+std::string joinString(std::string joinedStrs[], std::string joinSeq = "")
 {
-	/* 
+	/*
 		Joins the array joinedStrs into a single string,
 		with each entry of joinedStrs seperated
 		in the final string by the string joinSeq
@@ -46,7 +46,6 @@ std::string joinString(std::string joinedStrs[], std::string joinSeq="")
 
 MyEngineSystem::MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx)
 {
-	// 12-12-24 - revert to this version for documentation
 	GLint compileLogLen = 0;
 	GLint compileStatus = 0;
 	std::string tmpSource = "";
@@ -104,7 +103,7 @@ void main()
 	std::cout << "Creating Vertex Shader...\n";
 	vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	std::cout << "Vertex shader initialised with code " << glGetError() << "\n";
-	
+
 	std::cout << "Creating Fragment Shader...\n";
 	fragShader = glCreateShader(GL_FRAGMENT_SHADER);
 	std::cout << "Fragment Shader initialised with code " << glGetError() << "\n";
@@ -113,7 +112,7 @@ void main()
 	std::cout << "Adding Vertex Shader source...\n";
 	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
 	std::cout << "Shader source added with code " << glGetError() << "\n";
-	
+
 	std::cout << "Adding Fragment Shader source...\n";
 	glShaderSource(fragShader, 1, &fragmentShaderSource, NULL);
 	std::cout << "Shader source added with code " << glGetError() << "\n";
@@ -122,8 +121,8 @@ void main()
 	glCompileShader(vertexShader);
 	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &compileStatus);
 
-	if (compileStatus == GL_TRUE) 
-	{ 
+	if (compileStatus == GL_TRUE)
+	{
 		std::cout << "Vertex Shader compiled successfully\n";
 	}
 
@@ -163,8 +162,8 @@ Camera::Camera(Vector3F position, float fov, Dimension2i winDimensions, float ne
 	pos = position;
 	fieldOfView = fov;
 	// set up projection matrix for the camera
-	viewMat.initCameraTransform(pos, Vector3F(0, -1, 0));
-	cameraMat.setPerspectiveProjection(fov, winDimensions.w, winDimensions.h, nearPlane, farPlane);
+	cameraMat.initCameraTransform(pos, Vector3F(0, -1, 0));
+	//cameraMat.setPerspectiveProjection(fov, winDimensions.w, winDimensions.h, nearPlane, farPlane);
 	// set up pixel positions for frustum planes
 	near = nearPlane;
 	far = farPlane;
@@ -224,7 +223,7 @@ void MyEngineSystem::drawTriangle2D(Vector2f pointA, Vector2f pointB, Vector2f p
 	};
 	// make this the active vertex buffer (GL_ARRAY_BUFFER is the memory address of the active buffer)
 	glBufferData(GL_ARRAY_BUFFER, sizeof(deviceSpaceVertices), deviceSpaceVertices, GL_STATIC_DRAW);
-	
+
 	// send vertex data to the vertex shader
 	// takes shader program and the attribute we want access to
 	GLuint positionInput = glGetAttribLocation(myEngineShaderProg, "position");
@@ -245,36 +244,14 @@ void MyEngineSystem::drawMeshObjects(int camIndex, Mesh3D mesh)
 	// purge vertex stream vector
 	// reserve enough space for the mesh's vertices to appear in the vector multiple times
 	// * 9 to get the amt of vertices needed multiplied by dimensions of position vector (3)
-	GLfloat proj[16] = {};
-	GLfloat model[16] = {};
-	GLfloat view[16] = {};
-	
+	GLfloat matrix[16] = {};
+
 	int ind = 0;
 	for (int row = 0; row < 4; row++)
 	{
 		for (int col = 0; col < 4; col++)
 		{
-			proj[ind] = (*renderCameras)[camIndex].cameraMat.m[row][col];
-			ind++;
-		}
-	}
-
-	ind = 0;
-	for (int row = 0; row < 4; row++)
-	{
-		for (int col = 0; col < 4; col++)
-		{
-			model[ind] = mesh.modelMat.m[row][col];
-			ind++;
-		}
-	}
-
-	ind = 0;
-	for (int row = 0; row < 4; row++)
-	{
-		for (int col = 0; col < 4; col++)
-		{
-			view[ind] = (*renderCameras)[camIndex].viewMat.m[row][col];
+			matrix[ind] = (*renderCameras)[camIndex].cameraMat.m[row][col];
 			ind++;
 		}
 	}
@@ -303,11 +280,11 @@ void MyEngineSystem::drawMeshObjects(int camIndex, Mesh3D mesh)
 			(*vertexStream)[faceIndex] = coordA.getX();
 			(*vertexStream)[faceIndex + 1] = coordA.getY();
 			(*vertexStream)[faceIndex + 2] = coordA.getZ();
-			
+
 			(*vertexStream)[faceIndex + 3] = coordB.getX();
 			(*vertexStream)[faceIndex + 4] = coordB.getY();
 			(*vertexStream)[faceIndex + 5] = coordB.getZ();
-			
+
 			(*vertexStream)[faceIndex + 6] = coordC.getX();
 			(*vertexStream)[faceIndex + 7] = coordC.getY();
 			(*vertexStream)[faceIndex + 8] = coordC.getZ();
@@ -327,16 +304,27 @@ void MyEngineSystem::drawMeshObjects(int camIndex, Mesh3D mesh)
 	glBufferData(GL_ARRAY_BUFFER, sizeof(*vertexStream), vertexStream, GL_STATIC_DRAW);
 	// get vertex attribute and enable it
 	GLuint vertexPos = glGetAttribLocation(myEngineShaderProg, "worldSpacePosition"); // error ?
-	GLuint projPos = glGetUniformLocation(myEngineShaderProg, "projMat");
-	GLuint viewPos = glGetUniformLocation(myEngineShaderProg, "viewMat");
-	GLuint modelPos = glGetUniformLocation(myEngineShaderProg, "modelMat");
+	//GLuint matrixPos = glGetUniformLocation(myEngineShaderProg, "projection");
+	GLuint leftFrustumPos = glGetUniformLocation(myEngineShaderProg, "frustumLeft");
+	GLuint rightFrustumPos = glGetUniformLocation(myEngineShaderProg, "frustumRight");
+	GLuint topFrustumPos = glGetUniformLocation(myEngineShaderProg, "frustumTop");
+	GLuint bottomFrustumPos = glGetUniformLocation(myEngineShaderProg, "frustumBottom");
+	GLuint nearPlanePos = glGetUniformLocation(myEngineShaderProg, "nearPlaneDist");
+	GLuint farPlanePos = glGetUniformLocation(myEngineShaderProg, "farPlaneDist");
 
-	// send data
-	glUniformMatrix4fv(projPos, 16, GL_TRUE, proj);
-	glUniformMatrix4fv(viewPos, 16, GL_TRUE, view);
-	glUniformMatrix4fv(modelPos, 16, GL_TRUE, model);
+	GLuint cameraSpacePos = glGetUniformLocation(myEngineShaderProg, "cameraPos");
+	GLuint cameraFOVPos = glGetUniformLocation(myEngineShaderProg, "cameraFOV");
 
-	//const GLfloat* 
+	glVertexAttribPointer(vertexPos, 3, GL_FLOAT, false, 0, 0);
+	//glUniformMatrix4fv(matrixPos, 1, GL_FALSE, matrix);
+
+	// upload camera values to shader
+	glUniform1f(leftFrustumPos, (*renderCameras)[camIndex].getLeftPlane());
+	glUniform1f(rightFrustumPos, (*renderCameras)[camIndex].getRightPlane());
+	glUniform1f(topFrustumPos, (*renderCameras)[camIndex].getTopPlane());
+	glUniform1f(bottomFrustumPos, (*renderCameras)[camIndex].getBottomPlane());
+	glUniform1f(nearPlanePos, (*renderCameras)[camIndex].getNearPlane());
+	glUniform1f(farPlanePos, (*renderCameras)[camIndex].getFarPlane());
 
 	glEnableVertexArrayAttrib(vertexArrObj, vertexPos);
 
@@ -450,8 +438,6 @@ Mesh3D::Mesh3D(std::string path, Vector3F position)
 	vertices = new std::vector<Vector3F>();
 	normals = new std::vector<Vector3F>();
 
-	modelMat.loadIdentity();
-
 	std::ifstream modelFile;
 	modelFile.open(path);
 	// check if it worked
@@ -463,7 +449,7 @@ Mesh3D::Mesh3D(std::string path, Vector3F position)
 	{
 		// check if the line is a null terminator - taken from http://courses.washington.edu/css342/timots/Notes/eof.html
 		// also refer to https://docs.blender.org/manual/en/2.80/addons/io_scene_obj.html
-		
+
 		// determine the content of the line
 		std::cout << "Current line: " << objFileLine << std::endl;
 
@@ -497,6 +483,7 @@ Mesh3D::Mesh3D(std::string path, Vector3F position)
 			faces->push_back(Face3D(std::stoi(faceA[0]), std::stoi(faceB[0]), std::stoi(faceC[0]), std::stoi(faceA[2])));
 			std::cout << "Added face" << std::endl;
 		}
+
 	}
 
 	modelFile.close();
@@ -515,7 +502,7 @@ std::vector<Vector3F> Mesh3D::evaluateYAxisRotation()
 	std::vector<Vector3F> translatedVertices = {};
 	float angle = eulerRotation.getY();
 	float hypotenuse = 0;
-	
+
 	for (Vector3F vertex : *vertices)
 	{
 		// note: cmath trig functions use radians: https://cplusplus.com/reference/cmath/sin/
@@ -542,6 +529,6 @@ Face3D::Face3D(int vertexA, int vertexB, int vertexC, int normal)
 	3. add vertex coordinates to vertex buffer array
 	4. construct vertex buffer object (use glGenBuffers, pass in no of buffers to gen and address of reference value [GLuint])
 	5. make last created buffer the active one
-	6. 
+	6.
 	5. send data to graphics card
 */
