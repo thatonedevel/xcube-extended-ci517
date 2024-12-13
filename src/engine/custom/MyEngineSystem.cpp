@@ -163,8 +163,8 @@ Camera::Camera(Vector3F position, float fov, Dimension2i winDimensions, float ne
 	pos = position;
 	fieldOfView = fov;
 	// set up projection matrix for the camera
-	cameraMat.initCameraTransform(pos, Vector3F(0, -1, 0));
-	//cameraMat.setPerspectiveProjection(fov, winDimensions.w, winDimensions.h, nearPlane, farPlane);
+	viewMat.initCameraTransform(pos, Vector3F(0, -1, 0));
+	cameraMat.setPerspectiveProjection(fov, winDimensions.w, winDimensions.h, nearPlane, farPlane);
 	// set up pixel positions for frustum planes
 	near = nearPlane;
 	far = farPlane;
@@ -245,14 +245,36 @@ void MyEngineSystem::drawMeshObjects(int camIndex, Mesh3D mesh)
 	// purge vertex stream vector
 	// reserve enough space for the mesh's vertices to appear in the vector multiple times
 	// * 9 to get the amt of vertices needed multiplied by dimensions of position vector (3)
-	GLfloat matrix[16] = {};
+	GLfloat proj[16] = {};
+	GLfloat model[16] = {};
+	GLfloat view[16] = {};
 	
 	int ind = 0;
 	for (int row = 0; row < 4; row++)
 	{
 		for (int col = 0; col < 4; col++)
 		{
-			matrix[ind] = (*renderCameras)[camIndex].cameraMat.m[row][col];
+			proj[ind] = (*renderCameras)[camIndex].cameraMat.m[row][col];
+			ind++;
+		}
+	}
+
+	ind = 0;
+	for (int row = 0; row < 4; row++)
+	{
+		for (int col = 0; col < 4; col++)
+		{
+			model[ind] = mesh.modelMat.m[row][col];
+			ind++;
+		}
+	}
+
+	ind = 0;
+	for (int row = 0; row < 4; row++)
+	{
+		for (int col = 0; col < 4; col++)
+		{
+			view[ind] = (*renderCameras)[camIndex].viewMat.m[row][col];
 			ind++;
 		}
 	}
@@ -305,27 +327,16 @@ void MyEngineSystem::drawMeshObjects(int camIndex, Mesh3D mesh)
 	glBufferData(GL_ARRAY_BUFFER, sizeof(*vertexStream), vertexStream, GL_STATIC_DRAW);
 	// get vertex attribute and enable it
 	GLuint vertexPos = glGetAttribLocation(myEngineShaderProg, "worldSpacePosition"); // error ?
-	//GLuint matrixPos = glGetUniformLocation(myEngineShaderProg, "projection");
-	GLuint leftFrustumPos = glGetUniformLocation(myEngineShaderProg, "frustumLeft");
-	GLuint rightFrustumPos = glGetUniformLocation(myEngineShaderProg, "frustumRight");
-	GLuint topFrustumPos = glGetUniformLocation(myEngineShaderProg, "frustumTop");
-	GLuint bottomFrustumPos = glGetUniformLocation(myEngineShaderProg, "frustumBottom");
-	GLuint nearPlanePos = glGetUniformLocation(myEngineShaderProg, "nearPlaneDist");
-	GLuint farPlanePos = glGetUniformLocation(myEngineShaderProg, "farPlaneDist");
+	GLuint projPos = glGetUniformLocation(myEngineShaderProg, "projMat");
+	GLuint viewPos = glGetUniformLocation(myEngineShaderProg, "viewMat");
+	GLuint modelPos = glGetUniformLocation(myEngineShaderProg, "modelMat");
 
-	GLuint cameraSpacePos = glGetUniformLocation(myEngineShaderProg, "cameraPos");
-	GLuint cameraFOVPos = glGetUniformLocation(myEngineShaderProg, "cameraFOV");
+	// send data
+	glUniformMatrix4fv(projPos, 16, GL_TRUE, proj);
+	glUniformMatrix4fv(viewPos, 16, GL_TRUE, view);
+	glUniformMatrix4fv(modelPos, 16, GL_TRUE, model);
 
-	glVertexAttribPointer(vertexPos, 3, GL_FLOAT, false, 0, 0);
-	//glUniformMatrix4fv(matrixPos, 1, GL_FALSE, matrix);
-
-	// upload camera values to shader
-	glUniform1f(leftFrustumPos, (*renderCameras)[camIndex].getLeftPlane());
-	glUniform1f(rightFrustumPos, (*renderCameras)[camIndex].getRightPlane());
-	glUniform1f(topFrustumPos, (*renderCameras)[camIndex].getTopPlane());
-	glUniform1f(bottomFrustumPos, (*renderCameras)[camIndex].getBottomPlane());
-	glUniform1f(nearPlanePos, (*renderCameras)[camIndex].getNearPlane());
-	glUniform1f(farPlanePos, (*renderCameras)[camIndex].getFarPlane());
+	//const GLfloat* 
 
 	glEnableVertexArrayAttrib(vertexArrObj, vertexPos);
 
@@ -439,6 +450,8 @@ Mesh3D::Mesh3D(std::string path, Vector3F position)
 	vertices = new std::vector<Vector3F>();
 	normals = new std::vector<Vector3F>();
 
+	modelMat.loadIdentity();
+
 	std::ifstream modelFile;
 	modelFile.open(path);
 	// check if it worked
@@ -484,7 +497,6 @@ Mesh3D::Mesh3D(std::string path, Vector3F position)
 			faces->push_back(Face3D(std::stoi(faceA[0]), std::stoi(faceB[0]), std::stoi(faceC[0]), std::stoi(faceA[2])));
 			std::cout << "Added face" << std::endl;
 		}
-		
 	}
 
 	modelFile.close();
