@@ -295,9 +295,9 @@ void MyEngineSystem::drawMeshObjects(int camIndex, Mesh3D mesh)
 		if (faceIndex + 8 < vertexStream->size())
 		{
 			Face3D currentFace = mesh.getFaceAtIndex(faceIndex);
-			Vector3F coordA = mesh.getVertexCoordinate(currentFace.getVertexIndA() - 1);
-			Vector3F coordB = mesh.getVertexCoordinate(currentFace.getVertexIndB() - 1);
-			Vector3F coordC = mesh.getVertexCoordinate(currentFace.getVertexIndC() - 1);
+			Vector3F coordA = translateWorldSpaceToDeviceSpace(mesh.getVertexCoordinate(currentFace.getVertexIndA() - 1));
+			Vector3F coordB = translateWorldSpaceToDeviceSpace(mesh.getVertexCoordinate(currentFace.getVertexIndB() - 1));
+			Vector3F coordC = translateWorldSpaceToDeviceSpace(mesh.getVertexCoordinate(currentFace.getVertexIndC() - 1));
 
 			// add the coordinates to the vertex stream
 			(*vertexStream)[faceIndex] = coordA.getX();
