@@ -1,14 +1,46 @@
 #version 150 core
 
-// restored to previous version
 // vertex attributes
 in vec3 worldSpacePosition;
 
-uniform mat4 modelMat;
-uniform mat4 projMat;
-uniform mat4 viewMat;
+// frustum planes
+uniform float frustumLeft;
+uniform float frustumRight;
+uniform float frustumTop;
+uniform float frustumBottom;
+uniform float nearPlaneDist;
+uniform float farPlaneDist;
+
+// other camera info
+uniform float cameraFOV;
+uniform vec3 cameraPos;
+
+float zAxisProjection(float camZ)
+{
+    float res = 0.0;
+    if (worldSpacePosition.z != 0.0)
+    {
+        float stepOne = (2 * nearPlaneDist * farPlaneDist) / (farPlaneDist - nearPlaneDist);
+        float stepTwo = -(1/camZ);
+        float stepThree = (farPlaneDist + nearPlaneDist) / (farPlaneDist - nearPlaneDist);
+
+        res = (stepOne * stepTwo) + stepThree;
+    }
+
+    return res;
+}
 
 void main()
 {
-    gl_Position = projMat * viewMat * modelMat * vec4(worldSpacePosition, 1);
+    float aspectRatio = (frustumRight - frustumLeft) / (frustumBottom - frustumTop);
+    float focalLength = 1/tan(cameraFOV);
+
+    vec3 camSpaceVertexPos = worldSpacePosition - cameraPos;
+
+    vec4 projectionVec = vec4(0, 0, 0, 1);
+    projectionVec.x = -(focalLength/camSpaceVertexPos.z) * camSpaceVertexPos.x;
+    projectionVec.y = -(focalLength/camSpaceVertexPos.z) * camSpaceVertexPos.y;
+    projectionVec.z = zAxisProjection(camSpaceVertexPos.z);
+
+    gl_Position = projectionVec;
 }
