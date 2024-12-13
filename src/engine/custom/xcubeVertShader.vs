@@ -1,5 +1,6 @@
 #version 150 core
 
+// restored to previous version
 // vertex attributes
 in vec3 worldSpacePosition;
 

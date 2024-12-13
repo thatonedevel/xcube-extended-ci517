@@ -9,7 +9,7 @@ MyGame::MyGame() : AbstractGame(), score(0), lives(3), numKeys(5), gameWon(false
 	std::vector<std::string> testVec = {};
 	std::vector<std::string> testVertexVec = {};
 
-	// call function
+	// call function 
 	testVec = splitString(testVal, '/');
 	testVertexVec = splitString(testVertexCoords, ' ');
 

@@ -46,6 +46,7 @@ std::string joinString(std::string joinedStrs[], std::string joinSeq="")
 
 MyEngineSystem::MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx)
 {
+	// 12-12-24 - revert to this version for documentation
 	GLint compileLogLen = 0;
 	GLint compileStatus = 0;
 	std::string tmpSource = "";

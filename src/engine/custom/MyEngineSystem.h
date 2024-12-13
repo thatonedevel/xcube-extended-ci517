@@ -19,7 +19,7 @@ struct Vector3F
 public:
 	Vector3F(float, float, float);
 
-	// coord getter methods
+	// coord getter methods 
 	float getX() { return x; };
 	float getY() { return y; };
 	float getZ() { return z; };
