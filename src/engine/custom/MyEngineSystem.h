@@ -252,11 +252,12 @@ private:
 
 	// cameras that can be used for rendering
 	std::vector<Camera>* renderCameras = nullptr;
+	void populateVertexStream();
 
 public:
 	MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx);
 	~MyEngineSystem();
-	void drawTriangle2D(Vector2f, Vector2f, Vector2f);
+	void drawMeshesIn2D(int camIndex, Mesh3D model);
 	void drawMeshObjects(int camIndex, Mesh3D, GLint useOrthoProjection);
 	void setZDepth(int zVal) { zDepth = zVal; };
 	void addCamera(Camera cam);
