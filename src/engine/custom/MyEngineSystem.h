@@ -257,7 +257,7 @@ public:
 	MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx);
 	~MyEngineSystem();
 	void drawTriangle2D(Vector2f, Vector2f, Vector2f);
-	void drawMeshObjects(int camIndex, Mesh3D);
+	void drawMeshObjects(int camIndex, Mesh3D, GLint useOrthoProjection);
 	void setZDepth(int zVal) { zDepth = zVal; };
 	void addCamera(Camera cam);
 	Camera getCamera(int camIndex);
