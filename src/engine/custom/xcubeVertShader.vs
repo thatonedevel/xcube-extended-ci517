@@ -11,6 +11,8 @@ uniform float frustumBottom;
 uniform float nearPlaneDist;
 uniform float farPlaneDist;
 
+uniform int renderAs2D;
+
 // other camera info
 uniform float cameraFOV;
 uniform vec3 cameraPos;
@@ -40,7 +42,15 @@ void main()
     vec4 projectionVec = vec4(0, 0, 0, 1);
     projectionVec.x = -(focalLength/camSpaceVertexPos.z) * camSpaceVertexPos.x;
     projectionVec.y = -(focalLength/camSpaceVertexPos.z) * camSpaceVertexPos.y;
-    projectionVec.z = zAxisProjection(camSpaceVertexPos.z);
+    if (renderAs2D == 1)
+    {
+        projectionVec.z = 1;
+    }
+    else
+    {
+        projectionVec.z = zAxisProjection(camSpaceVertexPos.z);
+    }
+    
 
     gl_Position = projectionVec;
 }
