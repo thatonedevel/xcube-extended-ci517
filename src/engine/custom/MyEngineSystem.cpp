@@ -207,55 +207,8 @@ Vector2f MyEngineSystem::translateWorldSpaceToDeviceSpace(Vector2f worldSpaceCoo
 	return resultCoords;
 }
 
-void MyEngineSystem::drawTriangle2D(Vector2f pointA, Vector2f pointB, Vector2f pointC)
+void MyEngineSystem::populateVertexStream()
 {
-	// translate the world coords of the vertex into screen space coordinates
-	Vector2f devicePointA = translateWorldSpaceToDeviceSpace(pointA);
-	Vector2f devicePointB = translateWorldSpaceToDeviceSpace(pointB);
-	Vector2f devicePointC = translateWorldSpaceToDeviceSpace(pointC);
-
-	// array to add to the vertex buffer
-	float deviceSpaceVertices[] =
-	{
-		devicePointA.x, devicePointA.y,
-		devicePointB.x, devicePointB.y,
-		devicePointC.x, devicePointC.y
-	};
-	// make this the active vertex buffer (GL_ARRAY_BUFFER is the memory address of the active buffer)
-	glBufferData(GL_ARRAY_BUFFER, sizeof(deviceSpaceVertices), deviceSpaceVertices, GL_STATIC_DRAW);
-
-	// send vertex data to the vertex shader
-	// takes shader program and the attribute we want access to
-	GLuint positionInput = glGetAttribLocation(myEngineShaderProg, "position");
-	// takes the input attribute, the dimensions of the input vector, normalisation (convert to -1.0 to 1.0)
-	// last params are stride and offset (amount of bytes of space between vertices and amount of bytes before first vertex)
-	glVertexAttribPointer(positionInput, 2, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(positionInput);
-
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 3);
-	//GLenum err = glGetError();
-
-	//std::cout << err << std::endl;
-
-}
-
-void MyEngineSystem::drawMeshObjects(int camIndex, Mesh3D mesh)
-{
-	// purge vertex stream vector
-	// reserve enough space for the mesh's vertices to appear in the vector multiple times
-	// * 9 to get the amt of vertices needed multiplied by dimensions of position vector (3)
-	GLfloat matrix[16] = {};
-
-	int ind = 0;
-	for (int row = 0; row < 4; row++)
-	{
-		for (int col = 0; col < 4; col++)
-		{
-			matrix[ind] = (*renderCameras)[camIndex].cameraMat.m[row][col];
-			ind++;
-		}
-	}
-
 	for (int i = 0; i < vertexStream->size(); i++)
 	{
 		// set element at index i to 0. vector::clear causes issues with allocation
@@ -297,6 +250,24 @@ void MyEngineSystem::drawMeshObjects(int camIndex, Mesh3D mesh)
 		}
 		// yes i know this is terrible but i can't think of anything else OXKJHGKCJH
 	}
+}
+
+void MyEngineSystem::drawMeshObjects(int camIndex, Mesh3D mesh, GLint useOrthoProjection)
+{
+	// purge vertex stream vector
+	// reserve enough space for the mesh's vertices to appear in the vector multiple times
+	// * 9 to get the amt of vertices needed multiplied by dimensions of position vector (3)
+	GLfloat matrix[16] = {};
+
+	int ind = 0;
+	for (int row = 0; row < 4; row++)
+	{
+		for (int col = 0; col < 4; col++)
+		{
+			matrix[ind] = (*renderCameras)[camIndex].cameraMat.m[row][col];
+			ind++;
+		}
+	}
 
 	std::cout << "Vertex stream filled\n";
 
@@ -311,6 +282,7 @@ void MyEngineSystem::drawMeshObjects(int camIndex, Mesh3D mesh)
 	GLuint bottomFrustumPos = glGetUniformLocation(myEngineShaderProg, "frustumBottom");
 	GLuint nearPlanePos = glGetUniformLocation(myEngineShaderProg, "nearPlaneDist");
 	GLuint farPlanePos = glGetUniformLocation(myEngineShaderProg, "farPlaneDist");
+	GLuint drawAs2DPos = glGetUniformLocation(myEngineShaderProg, "renderAs2D");
 
 	GLuint cameraSpacePos = glGetUniformLocation(myEngineShaderProg, "cameraPos");
 	GLuint cameraFOVPos = glGetUniformLocation(myEngineShaderProg, "cameraFOV");
@@ -325,6 +297,7 @@ void MyEngineSystem::drawMeshObjects(int camIndex, Mesh3D mesh)
 	glUniform1f(bottomFrustumPos, (*renderCameras)[camIndex].getBottomPlane());
 	glUniform1f(nearPlanePos, (*renderCameras)[camIndex].getNearPlane());
 	glUniform1f(farPlanePos, (*renderCameras)[camIndex].getFarPlane());
+	glUniform1i(drawAs2DPos, useOrthoProjection);
 
 	glEnableVertexArrayAttrib(vertexArrObj, vertexPos);
 
@@ -332,6 +305,11 @@ void MyEngineSystem::drawMeshObjects(int camIndex, Mesh3D mesh)
 	std::cout << "Drawing Mesh" << std::endl;
 	glDrawArrays(GL_TRIANGLES, 0, mesh.getFaceCount() * 9);
 	std::cout << glGetError() << std::endl;
+}
+
+void MyEngineSystem::drawMeshesIn2D(int camIndex, Mesh3D mesh)
+{
+	// draws a mesh to the screen without 3D projection
 }
 
 Vector3F::Vector3F(float newX, float newY, float newZ)
