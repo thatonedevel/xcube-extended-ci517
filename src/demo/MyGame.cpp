@@ -20,7 +20,7 @@ MyGame::MyGame() : AbstractGame(), score(0), lives(3), numKeys(5), gameWon(false
 
 	mySystem->addCamera(Camera(Vector3F(0, 0, 0), 60, gfx->getCurrentWindowSize(), 5, 100));
 	// test the mesh object
-	currentMesh = new Mesh3D("res/cubeOfXCube.obj", Vector3F(0, 0, -5));
+	currentMesh = new Mesh3D("res/cubeOfXCube.obj", Vector3F(0, 0, -10));
 	// do somthing here for a breakpoint to check mesh data has been read in correctly
 	std::cout << "Loaded mesh" << std::endl;
 }
@@ -38,7 +38,7 @@ void MyGame::update() {
 }
 
 void MyGame::render() {
-	mySystem->drawMeshObjects(0, *currentMesh);
+	mySystem->drawMeshObjects(0, *currentMesh, GL_TRUE);
 }
 
 void MyGame::renderUI() {
