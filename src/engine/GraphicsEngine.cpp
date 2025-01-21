@@ -23,7 +23,12 @@ GraphicsEngine::GraphicsEngine() : fpsAverage(0), fpsPrevious(0), fpsStart(0), f
 
 	// initialise glew
 	glewExperimental = GL_TRUE;
-	glewInit();
+	GLenum status = glewInit();
+
+	if (status == GLEW_OK)
+	{
+		std::cout << "GLEW initialised correctly\n";
+	}
 
 	GLuint vertexBuffer;
 	glGenBuffers(1, &vertexBuffer);
