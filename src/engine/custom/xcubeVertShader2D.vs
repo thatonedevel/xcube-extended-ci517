@@ -31,7 +31,7 @@ vec2 rotateVertex(vec2 vertex, vec2 origin, float rotation)
 vec2 scaleVertex(vec2 vertex, vec2 origin, vec2 scale)
 {
     vec2 relativePos = vertex - origin; // translate to relative
-    relativePos = reltivePos * scale;
+    relativePos = relativePos * scale;
     return relativePos;
 }
 
