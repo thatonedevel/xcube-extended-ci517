@@ -213,6 +213,8 @@ public:
 	void moveObject(Vector3F translation);
 	void rotateYAxis(float angle) { eulerRotation = eulerRotation + Vector3F(0, angle, 0); };
 	Vector3F getFaceNormal(int faceIndex);
+	Vector3F getScale() { return scale; };
+	void setScale(Vector3F newScale) { scale = newScale; };
 
 	// getters
 	Face3D getFaceAtIndex(int index) { return (*faces)[index]; };
