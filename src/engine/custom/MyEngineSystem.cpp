@@ -67,24 +67,6 @@ void main()
 })glsl";
 
 	gfxInstance = gfx;
-	// load in the shaders
-	std::ifstream vertShaderFile = std::ifstream("res/xcubeVertShader.vs");
-	if (!vertShaderFile.fail())
-	{
-		std::cout << "Vertex Shader Loaded from external file\n";
-	}
-	else
-	{
-		std::cout << "Vertex Shader loading failed\n";
-	}
-	std::string shaderLine = "";
-
-	while (std::getline(vertShaderFile, shaderLine))
-	{
-		tmpSource += shaderLine + "\n";
-	}
-	vertexShaderSource = tmpSource.c_str();
-	vertShaderFile.close();
 
 	// create buffer objects
 	std::cout << "Creating Vertex Buffer Object...\n";
@@ -101,7 +83,7 @@ void main()
 	myEngineShaderProg = glCreateProgram();
 
 	std::cout << "Creating Vertex Shader...\n";
-	vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	//vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	std::cout << "Vertex shader initialised with code " << glGetError() << "\n";
 
 	std::cout << "Creating Fragment Shader...\n";
@@ -109,17 +91,19 @@ void main()
 	std::cout << "Fragment Shader initialised with code " << glGetError() << "\n";
 
 	// inject shader source code
-	std::cout << "Adding Vertex Shader source...\n";
-	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-	std::cout << "Shader source added with code " << glGetError() << "\n";
+	//std::cout << "Adding Vertex Shader source...\n";
+	//glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+	//std::cout << "Shader source added with code " << glGetError() << "\n";
 
 	std::cout << "Adding Fragment Shader source...\n";
 	glShaderSource(fragShader, 1, &fragmentShaderSource, NULL);
 	std::cout << "Shader source added with code " << glGetError() << "\n";
 
 	std::cout << "Compiling Vertex Shader...\n";
-	glCompileShader(vertexShader);
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &compileStatus);
+	loadShader("res/xcubeVertShader.vs", GL_VERTEX_SHADER, &vertexShader, vertexShaderSource);
+
+	std::cout << "Loading vertex shader...\n";
+	loadShader("res/xcubeVertShader2D.vs", GL_VERTEX_SHADER, &vertexShader2D, vertexShader2DSource);
 
 	if (compileStatus == GL_TRUE)
 	{
@@ -144,6 +128,56 @@ void main()
 	glLinkProgram(myEngineShaderProg);
 	std::cout << "Shader Program linked with code " << glGetError() << "\n";
 	glUseProgram(myEngineShaderProg);
+}
+
+void MyEngineSystem::loadShader(std::string path, GLenum shaderType, GLuint* target, const char* sourceBuffer)
+{
+	// loads a shader from an external file specified by the path and returns a GLuint pointing to the compiled shader
+
+	std::string source = "";
+	std::string srcLine = "";
+	const char* shaderSourceGL;
+	// load file
+	std::cout << "Loading shader at path: " << path << std::endl;
+	std::ifstream fileObj(path);
+	*target = glCreateShader(shaderType);
+	std::cout << "Target shader index: " << *target << std::endl;
+
+	GLint LENGTH = 1;
+
+	if (fileObj.fail())
+	{
+		std::cout << "Failed to load shader";
+	}
+	else
+	{
+		std::cout << "Shader source found";
+		while (std::getline(fileObj, srcLine))
+		{
+			source += srcLine + "\n";
+		}
+
+		std::cout << "Reached end of shader source\n";
+		std::cout << "Closing file\n";
+		fileObj.close();
+		sourceBuffer = source.c_str();
+
+		// compile shader
+		glShaderSource(*target, 1, &sourceBuffer, NULL);
+		glCompileShader(*target);
+		
+		GLint status = 0;
+		glGetShaderiv(*target, GL_COMPILE_STATUS, &status);
+
+		if (status == GL_FALSE)
+		{
+			std::cout << "Failed to compile shader\n";
+		}
+		else
+		{
+			std::cout << "Compiled shader successfully\n";
+		}
+	}
 }
 
 MyEngineSystem::~MyEngineSystem()
@@ -207,7 +241,7 @@ Vector2f MyEngineSystem::translateWorldSpaceToDeviceSpace(Vector2f worldSpaceCoo
 	return resultCoords;
 }
 
-void MyEngineSystem::populateVertexStream()
+void MyEngineSystem::populateVertexStream(Mesh3D mesh, bool is3D)
 {
 	for (int i = 0; i < vertexStream->size(); i++)
 	{
@@ -230,17 +264,38 @@ void MyEngineSystem::populateVertexStream()
 			Vector3F coordC = mesh.getVertexCoordinate(currentFace.getVertexIndC() - 1);
 
 			// add the coordinates to the vertex stream
-			(*vertexStream)[faceIndex] = coordA.getX();
-			(*vertexStream)[faceIndex + 1] = coordA.getY();
-			(*vertexStream)[faceIndex + 2] = coordA.getZ();
 
-			(*vertexStream)[faceIndex + 3] = coordB.getX();
-			(*vertexStream)[faceIndex + 4] = coordB.getY();
-			(*vertexStream)[faceIndex + 5] = coordB.getZ();
+			// add z coordinate if we are using vertex stream for 3D rendering
+			if (is3D)
+			{
+				std::cout << "Setting stream for 3D\n";
 
-			(*vertexStream)[faceIndex + 6] = coordC.getX();
-			(*vertexStream)[faceIndex + 7] = coordC.getY();
-			(*vertexStream)[faceIndex + 8] = coordC.getZ();
+				(*vertexStream)[faceIndex] = coordA.getX();
+				(*vertexStream)[faceIndex + 1] = coordA.getY();
+				(*vertexStream)[faceIndex + 2] = coordA.getZ();
+
+				(*vertexStream)[faceIndex + 3] = coordB.getX();
+				(*vertexStream)[faceIndex + 4] = coordB.getY();
+				(*vertexStream)[faceIndex + 5] = coordB.getZ();
+
+				(*vertexStream)[faceIndex + 6] = coordC.getX();
+				(*vertexStream)[faceIndex + 7] = coordC.getY();
+				(*vertexStream)[faceIndex + 8] = coordC.getZ();
+			}
+			else
+			{
+				std::cout << "Setting stream for 2D\n";
+
+				// only use x / y in stream for 2D rendering
+				(*vertexStream)[faceIndex] = coordA.getX();
+				(*vertexStream)[faceIndex + 1] = coordA.getY();
+
+				(*vertexStream)[faceIndex + 2] = coordB.getX();
+				(*vertexStream)[faceIndex + 3] = coordB.getY();
+
+				(*vertexStream)[faceIndex + 4] = coordC.getX();
+				(*vertexStream)[faceIndex + 5] = coordC.getY();
+			}
 
 			std::cout << "Added face to vertex stream\n";
 		}
@@ -268,6 +323,8 @@ void MyEngineSystem::drawMeshObjects(int camIndex, Mesh3D mesh, GLint useOrthoPr
 			ind++;
 		}
 	}
+
+	populateVertexStream(mesh, true);
 
 	std::cout << "Vertex stream filled\n";
 
@@ -310,6 +367,16 @@ void MyEngineSystem::drawMeshObjects(int camIndex, Mesh3D mesh, GLint useOrthoPr
 void MyEngineSystem::drawMeshesIn2D(int camIndex, Mesh3D mesh)
 {
 	// draws a mesh to the screen without 3D projection
+	populateVertexStream(mesh, false);
+	// send vertex data to buffer
+	glBufferData(GL_ARRAY_BUFFER, vertexStream->size(), vertexStream, GL_STATIC_DRAW);
+
+	// send other data to the shader program
+	GLuint vertexPosInput = glGetAttribLocation(myEngineShaderProg, "vertexPos");
+	glVertexAttribPointer(vertexPosInput, 2, GL_FLOAT, GL_FALSE, sizeof(float), NULL);
+	
+	// get pointers to uniform attributes
+	//GLuint camPos = glGetUniformLocation()
 }
 
 Vector3F::Vector3F(float newX, float newY, float newZ)
