@@ -105,10 +105,6 @@ void main()
 	std::cout << "Loading vertex shader...\n";
 	loadShader("res/xcubeVertShader2D.vs", GL_VERTEX_SHADER, &vertexShader2D, vertexShader2DSource);
 
-	if (compileStatus == GL_TRUE)
-	{
-		std::cout << "Vertex Shader compiled successfully\n";
-	}
 
 	// fragment shader
 	std::cout << "Compiling Fragment Shader...\n";
@@ -119,7 +115,7 @@ void main()
 
 	// add shaders to program, then link it and tell opengl to use this program
 	std::cout << "Adding shaders to engine program...\n";
-	glAttachShader(myEngineShaderProg, vertexShader);
+	glAttachShader(myEngineShaderProg, vertexShader2D);
 	std::cout << "Vertex Shader added to program with code " << glGetError() << "\n";
 	glAttachShader(myEngineShaderProg, fragShader);
 	std::cout << "Fragment Shader added to program with code " << glGetError() << "\n";
@@ -368,6 +364,17 @@ void MyEngineSystem::drawMeshesIn2D(int camIndex, Mesh3D mesh)
 {
 	// draws a mesh to the screen without 3D projection
 	populateVertexStream(mesh, false);
+
+	// set up arrays for uniforms
+	float camPos[] = {(*renderCameras)[camIndex].getPos().getX(), (*renderCameras)[camIndex].getPos().getY()};
+	float camRotation = 0;
+	float winDimensions[] = { gfxInstance->getCurrentWindowSize().w, gfxInstance->getCurrentWindowSize().h };
+	
+	float meshPos[] = { mesh.getOriginPosition().getX(), mesh.getOriginPosition().getY() };
+	float meshRotation = mesh.getEulerRotation().getZ();
+	float meshScale[] = { mesh.getScale().getX(), mesh.getScale().getY() };
+	float ratio = 32;
+
 	// send vertex data to buffer
 	glBufferData(GL_ARRAY_BUFFER, vertexStream->size(), vertexStream, GL_STATIC_DRAW);
 
@@ -376,7 +383,32 @@ void MyEngineSystem::drawMeshesIn2D(int camIndex, Mesh3D mesh)
 	glVertexAttribPointer(vertexPosInput, 2, GL_FLOAT, GL_FALSE, sizeof(float), NULL);
 	
 	// get pointers to uniform attributes
-	//GLuint camPos = glGetUniformLocation()
+	// camera rotations
+	GLuint camPosInd = glGetUniformLocation(myEngineShaderProg, "cameraPosition");
+	GLuint camRotationInd = glGetUniformLocation(myEngineShaderProg, "cameraRotation");
+	GLuint winDimensionsInd = glGetUniformLocation(myEngineShaderProg, "windowDimensions");
+
+	// mesh transformations
+	GLuint meshPositionIndex = glGetUniformLocation(myEngineShaderProg, "meshPosition");
+	GLuint meshRotationIndex = glGetUniformLocation(myEngineShaderProg, "meshRotation");
+	GLuint meshScaleIndex = glGetUniformLocation(myEngineShaderProg, "meshScale");
+	GLuint metresPixelScaleIndex = glGetUniformLocation(myEngineShaderProg, "metresToPixelsScale");
+
+	// send data to uniforms
+	glUniform2fv(camPosInd, 2, camPos);
+	glUniform1f(camRotationInd, camRotation);
+	glUniform2fv(winDimensionsInd, 2, winDimensions); // camera
+
+	glUniform2fv(meshPositionIndex, 2, meshPos);
+	glUniform1f(meshRotationIndex, meshRotation);
+	glUniform2fv(meshScaleIndex, 2, meshScale);
+	glUniform1f(metresPixelScaleIndex, ratio);
+
+	// enable vao
+	glEnableVertexArrayAttrib(vertexArrObj, vertexPosInput);
+	
+	// draw triangles
+	glDrawArrays(GL_TRIANGLES, 0, mesh.getFaceCount() * 3);
 }
 
 Vector3F::Vector3F(float newX, float newY, float newZ)
