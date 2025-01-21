@@ -234,11 +234,13 @@ private:
 	std::shared_ptr<GraphicsEngine> gfxInstance = nullptr;
 	const char* vertexShaderSource = "";
 	const char* fragmentShaderSource = "";
+	const char* vertexShader2DSource = "";
 	Vector2f translateWorldSpaceToDeviceSpace(Vector2f);
 	Vector3F translateWorldSpaceToDeviceSpace(Vector3F);
 
 	// shaders
 	GLuint vertexShader;
+	GLuint vertexShader2D;
 	GLuint fragShader;
 
 	// shader program (used to combine shaders)
@@ -252,7 +254,7 @@ private:
 
 	// cameras that can be used for rendering
 	std::vector<Camera>* renderCameras = nullptr;
-	void populateVertexStream();
+	void populateVertexStream(Mesh3D, bool);
 
 public:
 	MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx);
@@ -262,5 +264,6 @@ public:
 	void setZDepth(int zVal) { zDepth = zVal; };
 	void addCamera(Camera cam);
 	Camera getCamera(int camIndex);
+	void loadShader(std::string, GLenum, GLuint* target, const char* source);
 };
 #endif
