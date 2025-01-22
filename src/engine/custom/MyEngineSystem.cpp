@@ -37,13 +37,8 @@ Vector2f projectCoordinate(Vector2f coord, Vector2f dim, float multiplier)
 	origin.x /= 2;
 	origin.y /= 2;
 
-
-	Vector2f offset = Vector2f(0, 0);
-	offset.x = pixelPos.x - origin.x;
-	offset.y = pixelPos.y - origin.y;
-
-	projected.x = offset.x / origin.x;
-	projected.y = offset.y / origin.y;
+	projected.x = pixelPos.x / origin.x;
+	projected.y = pixelPos.y / origin.y;
 
 	return projected;
 }
@@ -433,7 +428,8 @@ void MyEngineSystem::drawMeshesIn2D(int camIndex, Mesh3D mesh)
 
 	// projection test
 	std::cout << "Projection test of vertex: x:" << (*vertexStream)[0] << ", y:" << (*vertexStream)[1] << std::endl;
-	Vector2f projected = projectCoordinate(absPos, Vector2f(winDimensions[0], winDimensions[1]));
+	std::cout << "Absolute world position of vertex: x:" << absPos.x << ", y:" << absPos.y << std::endl;
+	Vector2f projected = projectCoordinate(absPos, Vector2f(winDimensions[0], winDimensions[1]), SCREEN_METRE);
 	std::cout << "Projected position: x:" << projected.x << ", y:" << projected.y << std::endl;
 
 	// send vertex data to buffer
