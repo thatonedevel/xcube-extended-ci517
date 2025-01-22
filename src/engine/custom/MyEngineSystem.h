@@ -10,6 +10,12 @@
 
 // 1 "metre" = 32 pixels
 
+// test versions of shader functions to determine where the faulty data is
+Vector2f rotateVertex(Vector2f, float);
+Vector2f scaleVertex(Vector2f, Vector2f);
+Vector2f projectCoordinate(Vector2f, Vector2f);
+
+
 std::vector<std::string> splitString(std::string input, char splitDelimeter);
 
 std::string joinString(std::string joinedStrs[], std::string joinChar);
@@ -208,7 +214,7 @@ public:
 	Mesh3D(std::string path, Vector3F position);
 	Vector3F getEulerRotation() { return eulerRotation; };
 	Vector3F getOriginPosition() { return originPosition; };
-	Vector3F getVertexCoordinate(int index) { return originPosition + ((*vertices)[index] * SCREEN_METRE); };
+	Vector3F getVertexCoordinate(int index) { return (*vertices)[index]; };
 	size_t getVertexCount() { return vertices->size(); };
 	void moveObject(Vector3F translation);
 	void rotateYAxis(float angle) { eulerRotation = eulerRotation + Vector3F(0, angle, 0); };
