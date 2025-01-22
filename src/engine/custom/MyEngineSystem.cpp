@@ -1,5 +1,53 @@
 #include "MyEngineSystem.h"
 
+// shader function tests
+
+Vector2f rotateVertex(Vector2f vertex, float rotation)
+{
+	// returns the relative position of a given vertex once rotated by the given value. takes rotation in radians
+	// (Brett, 2016)
+	Vector2f res = Vector2f(0, 0);
+	res.x = cos(rotation) * vertex.x - sin(rotation) * vertex.y;
+	res.y = sin(rotation) * vertex.x + cos(rotation) * vertex.y;
+
+	return res;
+}
+
+Vector2f scaleVertex(Vector2f vertex, Vector2f scale)
+{
+	Vector2f relativePos = Vector2f(0, 0);
+	relativePos.x = vertex.x * scale.x;
+	relativePos.y = vertex.y * scale.y;
+	return relativePos;
+}
+
+Vector2f projectCoordinate(Vector2f coord, Vector2f dim, float multiplier)
+{
+	// takes an absolute vertex position in metres and produces the device coordinate
+	// screen origin = 0,0
+	// coord x < dim x / 2 --> negative
+	// coord y 
+	Vector2f pixelPos = coord;
+	pixelPos.x *= multiplier;
+	pixelPos.y *= multiplier;
+
+	Vector2f projected = Vector2f(0, 0);
+
+	Vector2f origin = dim;
+	origin.x /= 2;
+	origin.y /= 2;
+
+
+	Vector2f offset = Vector2f(0, 0);
+	offset.x = pixelPos.x - origin.x;
+	offset.y = pixelPos.y - origin.y;
+
+	projected.x = offset.x / origin.x;
+	projected.y = offset.y / origin.y;
+
+	return projected;
+}
+
 std::vector<std::string> splitString(std::string input, char splitDelimeter)
 {
 	int componentStartIndex = 0;
@@ -143,11 +191,11 @@ void MyEngineSystem::loadShader(std::string path, GLenum shaderType, GLuint* tar
 
 	if (fileObj.fail())
 	{
-		std::cout << "Failed to load shader";
+		std::cout << "Failed to load shader\n";
 	}
 	else
 	{
-		std::cout << "Shader source found";
+		std::cout << "Shader source found\n";
 		while (std::getline(fileObj, srcLine))
 		{
 			source += srcLine + "\n";
@@ -375,8 +423,21 @@ void MyEngineSystem::drawMeshesIn2D(int camIndex, Mesh3D mesh)
 	float meshScale[] = { mesh.getScale().getX(), mesh.getScale().getY() };
 	float ratio = 32;
 
+	// run shader test functions - we need to see where data is changed to be outide device space bounds
+	Vector2f rotated = rotateVertex(Vector2f((*vertexStream)[0], (*vertexStream)[1]), 0);
+	Vector2f scaled = scaleVertex(rotated, Vector2f(meshScale[0], meshScale[1]));
+	// set to abs
+	Vector2f absPos = Vector2f(0, 0);
+	absPos.x = scaled.x + meshPos[0];
+	absPos.y = scaled.y + meshPos[1];
+
+	// projection test
+	std::cout << "Projection test of vertex: x:" << (*vertexStream)[0] << ", y:" << (*vertexStream)[1] << std::endl;
+	Vector2f projected = projectCoordinate(absPos, Vector2f(winDimensions[0], winDimensions[1]));
+	std::cout << "Projected position: x:" << projected.x << ", y:" << projected.y << std::endl;
+
 	// send vertex data to buffer
-	glBufferData(GL_ARRAY_BUFFER, vertexStream->size(), vertexStream, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(*vertexStream), vertexStream, GL_STATIC_DRAW);
 
 	// send other data to the shader program
 	GLuint vertexPosInput = glGetAttribLocation(myEngineShaderProg, "vertexPos");
@@ -408,7 +469,7 @@ void MyEngineSystem::drawMeshesIn2D(int camIndex, Mesh3D mesh)
 	glEnableVertexArrayAttrib(vertexArrObj, vertexPosInput);
 	
 	// draw triangles
-	glDrawArrays(GL_TRIANGLES, 0, mesh.getFaceCount() * 3);
+	glDrawArrays(GL_TRIANGLES, 0, mesh.getFaceCount() * 9);
 }
 
 Vector3F::Vector3F(float newX, float newY, float newZ)
