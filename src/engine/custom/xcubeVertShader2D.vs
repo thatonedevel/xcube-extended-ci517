@@ -47,10 +47,8 @@ vec2 projectCoordinate(vec2 coord, vec2 dim, float multiplier)
 
     vec2 origin = dim / 2;
 
-    vec2 offset = pixelPos - origin;
-
-    projected.x = offset.x / origin.x;
-    projected.y = offset.y / origin.y;
+    projected.x = pixelPos.x / origin.x;
+    projected.y = pixelPos.y / origin.y;
 
     return projected;
 }
