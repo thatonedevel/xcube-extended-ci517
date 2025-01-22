@@ -39,6 +39,7 @@ void MyGame::update() {
 
 void MyGame::render() {
 	//mySystem->drawMeshObjects(0, *currentMesh, GL_TRUE);
+	mySystem->drawMeshesIn2D(0, *currentMesh);
 }
 
 void MyGame::renderUI() {
