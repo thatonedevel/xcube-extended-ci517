@@ -10,12 +10,6 @@
 
 // 1 "metre" = 32 pixels
 
-// test versions of shader functions to determine where the faulty data is
-Vector2f rotateVertex(Vector2f, float);
-Vector2f scaleVertex(Vector2f, Vector2f);
-Vector2f projectCoordinate(Vector2f, Vector2f);
-
-
 std::vector<std::string> splitString(std::string input, char splitDelimeter);
 
 std::string joinString(std::string joinedStrs[], std::string joinChar);
@@ -274,4 +268,10 @@ public:
 	Camera getCamera(int camIndex);
 	void loadShader(std::string, GLenum, GLuint* target, const char* source);
 };
+
+// test versions of shader functions to determine where the faulty data is
+Vector2f rotateVertex(Vector2f, float);
+Vector2f scaleVertex(Vector2f, Vector2f);
+Vector2f projectCoordinate(Vector2f, Vector2f);
+
 #endif
