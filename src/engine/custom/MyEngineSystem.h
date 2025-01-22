@@ -6,7 +6,7 @@
 
 #define DEG2RAD 0.017453292519943295769236907684f
 
-#define SCREEN_METRE 100
+#define SCREEN_METRE 32
 
 // 1 "metre" = 32 pixels
 
@@ -230,6 +230,10 @@ private:
 	std::vector<Vector3F>* normals = nullptr;
 };
 
+Vector2f rotateVertex(Vector2f, float);
+Vector2f scaleVertex(Vector2f, Vector2f);
+Vector2f projectCoordinate(Vector2f, Vector2f, float);
+
 class MyEngineSystem {
 	friend class XCube2Engine;
 private:
@@ -270,8 +274,6 @@ public:
 };
 
 // test versions of shader functions to determine where the faulty data is
-Vector2f rotateVertex(Vector2f, float);
-Vector2f scaleVertex(Vector2f, Vector2f);
-Vector2f projectCoordinate(Vector2f, Vector2f);
+
 
 #endif
