@@ -219,6 +219,7 @@ public:
 	// getters
 	Face3D getFaceAtIndex(int index) { return (*faces)[index]; };
 	size_t getFaceCount() { return faces->size(); };
+
 private:
 	Vector3F originPosition = Vector3F(0, 0, 0);
 	Vector3F eulerRotation = Vector3F(0, 0, 0);
