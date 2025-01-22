@@ -418,19 +418,23 @@ void MyEngineSystem::drawMeshesIn2D(int camIndex, Mesh3D mesh)
 	float meshScale[] = { mesh.getScale().getX(), mesh.getScale().getY() };
 	float ratio = 32;
 
-	// run shader test functions - we need to see where data is changed to be outide device space bounds
-	Vector2f rotated = rotateVertex(Vector2f((*vertexStream)[0], (*vertexStream)[1]), 0);
-	Vector2f scaled = scaleVertex(rotated, Vector2f(meshScale[0], meshScale[1]));
-	// set to abs
-	Vector2f absPos = Vector2f(0, 0);
-	absPos.x = scaled.x + meshPos[0];
-	absPos.y = scaled.y + meshPos[1];
+	
+	for (int vertInd = 0; vertInd + 2 < mesh.getVertexCount() * 2; vertInd +=2)
+	{
+		// run shader test functions - we need to see where data is changed to be outide device space bounds
+		Vector2f rotated = rotateVertex(Vector2f((*vertexStream)[vertInd], (*vertexStream)[vertInd+1]), 0);
+		Vector2f scaled = scaleVertex(rotated, Vector2f(meshScale[0], meshScale[1]));
+		// set to abs
+		Vector2f absPos = Vector2f(0, 0);
+		absPos.x = scaled.x + meshPos[0];
+		absPos.y = scaled.y + meshPos[1];
 
-	// projection test
-	std::cout << "Projection test of vertex: x:" << (*vertexStream)[0] << ", y:" << (*vertexStream)[1] << std::endl;
-	std::cout << "Absolute world position of vertex: x:" << absPos.x << ", y:" << absPos.y << std::endl;
-	Vector2f projected = projectCoordinate(absPos, Vector2f(winDimensions[0], winDimensions[1]), SCREEN_METRE);
-	std::cout << "Projected position: x:" << projected.x << ", y:" << projected.y << std::endl;
+		// projection test
+		std::cout << "Projection test of vertex: x:" << (*vertexStream)[vertInd] << ", y:" << (*vertexStream)[vertInd+1] << std::endl;
+		std::cout << "Absolute world position of vertex: x:" << absPos.x << ", y:" << absPos.y << std::endl;
+		Vector2f projected = projectCoordinate(absPos, Vector2f(winDimensions[0], winDimensions[1]), SCREEN_METRE);
+		std::cout << "Projected position: x:" << projected.x << ", y:" << projected.y << std::endl;
+	}
 
 	// send vertex data to buffer
 	glBufferData(GL_ARRAY_BUFFER, sizeof(*vertexStream), vertexStream, GL_STATIC_DRAW);
@@ -444,28 +448,31 @@ void MyEngineSystem::drawMeshesIn2D(int camIndex, Mesh3D mesh)
 	GLuint camPosInd = glGetUniformLocation(myEngineShaderProg, "cameraPosition");
 	GLuint camRotationInd = glGetUniformLocation(myEngineShaderProg, "cameraRotation");
 	GLuint winDimensionsInd = glGetUniformLocation(myEngineShaderProg, "windowDimensions");
-
+	
 	// mesh transformations
 	GLuint meshPositionIndex = glGetUniformLocation(myEngineShaderProg, "meshPosition");
 	GLuint meshRotationIndex = glGetUniformLocation(myEngineShaderProg, "meshRotation");
 	GLuint meshScaleIndex = glGetUniformLocation(myEngineShaderProg, "meshScale");
 	GLuint metresPixelScaleIndex = glGetUniformLocation(myEngineShaderProg, "metresToPixelsScale");
-
-	// send data to uniforms
-	glUniform2fv(camPosInd, 2, camPos);
+	//
+	//// send data to uniforms
+	glUniform2fv(camPosInd, 1, camPos);
 	glUniform1f(camRotationInd, camRotation);
-	glUniform2fv(winDimensionsInd, 2, winDimensions); // camera
-
-	glUniform2fv(meshPositionIndex, 2, meshPos);
+	glUniform2fv(winDimensionsInd, 1, winDimensions); // camera
+	
+	glUniform2fv(meshPositionIndex, 1, meshPos);
 	glUniform1f(meshRotationIndex, meshRotation);
-	glUniform2fv(meshScaleIndex, 2, meshScale);
+	glUniform2fv(meshScaleIndex, 1, meshScale);
 	glUniform1f(metresPixelScaleIndex, ratio);
-
+	
 	// enable vao
 	glEnableVertexArrayAttrib(vertexArrObj, vertexPosInput);
 	
 	// draw triangles
-	glDrawArrays(GL_TRIANGLES, 0, mesh.getFaceCount() * 9);
+	std::cout << "Render count: " << mesh.getVertexCount();
+	glDrawArrays(GL_TRIANGLES, 0, mesh.getVertexCount() * 2);
+
+	std::cout << glGetError() << std::endl;
 }
 
 Vector3F::Vector3F(float newX, float newY, float newZ)
@@ -529,7 +536,7 @@ Vector3F Vector3F::operator-(Vector3F& operand)
 float Vector3F::dot(Vector3F other)
 {
 	// dot product
-	// lengyel. e, mathematics for game programming and computer graphics third edition (2012) course technology ptr, boston (massachussets)
+	// lengyel. e (2012)
 	return (x * other.getX()) + (y * other.getY()) + (z * other.getZ());
 }
 
