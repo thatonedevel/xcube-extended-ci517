@@ -5,18 +5,17 @@ SDL_Renderer * GraphicsEngine::renderer = nullptr;
 GraphicsEngine::GraphicsEngine() : fpsAverage(0), fpsPrevious(0), fpsStart(0), fpsEnd(0), drawColor(toSDLColor(0, 0, 0, 255)) {
 
 
-	// ---- add the opengl context: source from https://open.gl/context ----
+	// ---- add the opengl context (Overvoorde. A, 2019) ----
 
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
-	// --------------------------------------------------
 
 	window = SDL_CreateWindow("The X-CUBE Extended Game Engine",
 		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-		DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, SDL_WINDOW_OPENGL); // use SDL_WINDOW_OPENGL
+		DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, SDL_WINDOW_OPENGL); // use SDL_WINDOW_OPENGL (Alexander Overvoorde, 2019)
 
 	// get the context (drawing space)
 	context3D = SDL_GL_CreateContext(window);
@@ -30,10 +29,7 @@ GraphicsEngine::GraphicsEngine() : fpsAverage(0), fpsPrevious(0), fpsStart(0), f
 		std::cout << "GLEW initialised correctly\n";
 	}
 
-	GLuint vertexBuffer;
-	glGenBuffers(1, &vertexBuffer);
-	printf("%u\n", vertexBuffer);
-
+	// --------------------------------------------------
 	if (nullptr == window)
 		throw EngineException("Failed to create window", SDL_GetError());
 
@@ -63,7 +59,7 @@ GraphicsEngine::~GraphicsEngine() {
 	debug("Destroying OpenGL Context");
 #endif // __DEBUG
 
-	SDL_GL_DeleteContext(context3D);
+	SDL_GL_DeleteContext(context3D); // Overvoorde. A, 2019
 	SDL_Quit();
 
 #ifdef __DEBUG

@@ -99,6 +99,8 @@ MyEngineSystem::MyEngineSystem(std::shared_ptr<GraphicsEngine> gfx)
 	//std::cout << "Vector capacity: " << vertexStream->max_size() << std::endl;
 	vertexStream->resize(3000000, 0);
 	std::cout << "Vertex stream size: " << vertexStream->size() << std::endl;
+
+// ---- fragment shader by Alex Overvoorde (2019) ----
 	fragmentShaderSource = R"glsl(
 #version 150 core
 
@@ -108,18 +110,20 @@ void main()
 {
     outColor = vec4(1.0, 1.0, 1.0, 1.0);
 })glsl";
-
+// ---------------
 	gfxInstance = gfx;
 
 	// create buffer objects
+	// ----- subsystem setup based off of the implementation aspects by Alexander Overvoorde (2019) ----
 	std::cout << "Creating Vertex Buffer Object...\n";
 	glGenBuffers(1, &myEngineSysVBO);
 	std::cout << "";
 	glGenVertexArrays(1, &vertexArrObj);
 
 	std::cout << "Binding Vertex Array Object & Vertex Buffer Object...\n";
-	glBindBuffer(GL_ARRAY_BUFFER, myEngineSysVBO);
 	glBindVertexArray(vertexArrObj);
+	glBindBuffer(GL_ARRAY_BUFFER, myEngineSysVBO);
+	
 
 	// init shaders
 	std::cout << "Creating Shader Program...\n";
@@ -133,28 +137,21 @@ void main()
 	fragShader = glCreateShader(GL_FRAGMENT_SHADER);
 	std::cout << "Fragment Shader initialised with code " << glGetError() << "\n";
 
-	// inject shader source code
-	//std::cout << "Adding Vertex Shader source...\n";
-	//glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-	//std::cout << "Shader source added with code " << glGetError() << "\n";
-
 	std::cout << "Adding Fragment Shader source...\n";
 	glShaderSource(fragShader, 1, &fragmentShaderSource, NULL);
 	std::cout << "Shader source added with code " << glGetError() << "\n";
-
-	std::cout << "Compiling Vertex Shader...\n";
-	loadShader("res/xcubeVertShader.vs", GL_VERTEX_SHADER, &vertexShader, vertexShaderSource);
-
-	std::cout << "Loading vertex shader...\n";
-	loadShader("res/xcubeVertShader2D.vs", GL_VERTEX_SHADER, &vertexShader2D, vertexShader2DSource);
-
-
 	// fragment shader
 	std::cout << "Compiling Fragment Shader...\n";
 	glCompileShader(fragShader);
 	glGetShaderiv(fragShader, GL_COMPILE_STATUS, &compileStatus);
 	if (compileStatus == GL_TRUE) std::cout << "Fragment Shader compiled successfully\n";
 	else std::cout << "Compilation error for Fragment Shader\n";
+
+	std::cout << "Compiling Vertex Shader...\n";
+	loadShader("res/xcubeVertShader.vs", GL_VERTEX_SHADER, &vertexShader, vertexShaderSource);
+
+	std::cout << "Loading vertex shader...\n";
+	loadShader("res/xcubeVertShader2D.vs", GL_VERTEX_SHADER, &vertexShader2D, vertexShader2DSource);
 
 	// add shaders to program, then link it and tell opengl to use this program
 	std::cout << "Adding shaders to engine program...\n";
@@ -167,6 +164,7 @@ void main()
 	glLinkProgram(myEngineShaderProg);
 	std::cout << "Shader Program linked with code " << glGetError() << "\n";
 	glUseProgram(myEngineShaderProg);
+	// ----------------------------------------------------------------------
 }
 
 void MyEngineSystem::loadShader(std::string path, GLenum shaderType, GLuint* target, const char* sourceBuffer)
@@ -288,6 +286,8 @@ void MyEngineSystem::populateVertexStream(Mesh3D mesh, bool is3D)
 		(*vertexStream)[i] = 0;
 	}
 
+	renderCount = 0;
+
 	std::cout << "Faces to render: " << mesh.getFaceCount() << std::endl;
 
 	// use GL_TRIANGLES for rendering faces
@@ -320,20 +320,26 @@ void MyEngineSystem::populateVertexStream(Mesh3D mesh, bool is3D)
 				(*vertexStream)[faceIndex + 6] = coordC.getX();
 				(*vertexStream)[faceIndex + 7] = coordC.getY();
 				(*vertexStream)[faceIndex + 8] = coordC.getZ();
+
+				renderCount += 9;
 			}
 			else
 			{
 				std::cout << "Setting stream for 2D\n";
+				if (faceIndex % 6 == 0)
+				{
+					// only use x / y in stream for 2D rendering
+					(*vertexStream)[faceIndex] = coordA.getX();
+					(*vertexStream)[faceIndex + 1] = coordA.getY();
 
-				// only use x / y in stream for 2D rendering
-				(*vertexStream)[faceIndex] = coordA.getX();
-				(*vertexStream)[faceIndex + 1] = coordA.getY();
+					(*vertexStream)[faceIndex + 2] = coordB.getX();
+					(*vertexStream)[faceIndex + 3] = coordB.getY();
 
-				(*vertexStream)[faceIndex + 2] = coordB.getX();
-				(*vertexStream)[faceIndex + 3] = coordB.getY();
+					(*vertexStream)[faceIndex + 4] = coordC.getX();
+					(*vertexStream)[faceIndex + 5] = coordC.getY();
 
-				(*vertexStream)[faceIndex + 4] = coordC.getX();
-				(*vertexStream)[faceIndex + 5] = coordC.getY();
+					renderCount += 6;
+				}
 			}
 
 			std::cout << "Added face to vertex stream\n";
@@ -399,7 +405,7 @@ void MyEngineSystem::drawMeshObjects(int camIndex, Mesh3D mesh, GLint useOrthoPr
 
 	// draw the mesh
 	std::cout << "Drawing Mesh" << std::endl;
-	glDrawArrays(GL_TRIANGLES, 0, mesh.getFaceCount() * 9);
+	glDrawArrays(GL_TRIANGLES, 0, renderCount);
 	std::cout << glGetError() << std::endl;
 }
 
@@ -441,7 +447,7 @@ void MyEngineSystem::drawMeshesIn2D(int camIndex, Mesh3D mesh)
 
 	// send other data to the shader program
 	GLuint vertexPosInput = glGetAttribLocation(myEngineShaderProg, "vertexPos");
-	glVertexAttribPointer(vertexPosInput, 2, GL_FLOAT, GL_FALSE, sizeof(float), NULL);
+	glVertexAttribPointer(vertexPosInput, 2, GL_FLOAT, GL_FALSE, 0, NULL);
 	
 	// get pointers to uniform attributes
 	// camera rotations
@@ -466,11 +472,11 @@ void MyEngineSystem::drawMeshesIn2D(int camIndex, Mesh3D mesh)
 	glUniform1f(metresPixelScaleIndex, ratio);
 	
 	// enable vao
-	glEnableVertexArrayAttrib(vertexArrObj, vertexPosInput);
+	glEnableVertexAttribArray(vertexPosInput);
 	
 	// draw triangles
-	std::cout << "Render count: " << mesh.getVertexCount();
-	glDrawArrays(GL_TRIANGLES, 0, mesh.getVertexCount() * 2);
+	std::cout << "Render count: " << renderCount << std::endl;
+	glDrawArrays(GL_TRIANGLES, 0, renderCount);
 
 	std::cout << glGetError() << std::endl;
 }

@@ -21,6 +21,8 @@ class MyGame : public AbstractGame {
 		bool gameWon;
 		Mesh3D* currentMesh = nullptr;
 
+		bool eeKeyOnLastFrame = false;
+
 		void handleKeyEvents();
 		void update();
 		void render();

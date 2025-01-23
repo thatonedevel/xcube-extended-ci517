@@ -31,6 +31,60 @@ MyGame::~MyGame() {
 
 void MyGame::handleKeyEvents() {
 
+	// transformations
+	if (eventSystem->isPressed(Key::A))
+	{
+		currentMesh->moveObject(Vector3F(0.5, 0, 0));
+	}
+	else if (eventSystem->isPressed(Key::D))
+	{
+		currentMesh->moveObject(Vector3F(-0.5, 0, 0));
+	}
+
+	if (eventSystem->isPressed(Key::S))
+	{
+		currentMesh->moveObject(Vector3F(0, -0.5, 0));
+	}
+	else if (eventSystem->isPressed(Key::W))
+	{
+		currentMesh->moveObject(Vector3F(0, 0.5, 0));
+	}
+
+	// rotation
+
+	if (eventSystem->isPressed(Key::RIGHT))
+	{
+		currentMesh->rotateZAxis(10);
+	}
+	else if (eventSystem->isPressed(Key::LEFT))
+	{
+		currentMesh->rotateZAxis(-10);
+	}
+
+	// scale
+	if (eventSystem->isPressed(Key::UP))
+	{
+		currentMesh->scaleMesh(Vector3F(1.1, 1.1, 1.1));
+	}
+	else if (eventSystem->isPressed(Key::DOWN))
+	{
+		currentMesh->scaleMesh(Vector3F(-1.1, -1.1, -1.1));
+	}
+
+	// easter egg
+	if (eventSystem->isPressed(Key::SPACE))
+	{
+		if (!eeKeyOnLastFrame)
+		{
+			eeKeyOnLastFrame = true;
+			gfx->showInfoMessageBox("Subsystem by Nora Dwelly, AD1352", "Mesh Rendering subsystem easeteregg");
+		}
+	}
+	else
+	{
+		if (eeKeyOnLastFrame)
+			eeKeyOnLastFrame = false;
+	}
 }
 
 void MyGame::update() {

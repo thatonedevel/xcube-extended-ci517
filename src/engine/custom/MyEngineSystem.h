@@ -210,10 +210,11 @@ public:
 	Vector3F getOriginPosition() { return originPosition; };
 	Vector3F getVertexCoordinate(int index) { return (*vertices)[index]; };
 	size_t getVertexCount() { return vertices->size(); };
-	void moveObject(Vector3F translation);
-	void rotateYAxis(float angle) { eulerRotation = eulerRotation + Vector3F(0, angle, 0); };
+	void moveObject(Vector3F translation) { originPosition = originPosition + translation; };
+	void rotateZAxis(float angle) { eulerRotation = eulerRotation + Vector3F(0, 0, angle); };
 	Vector3F getFaceNormal(int faceIndex);
 	Vector3F getScale() { return scale; };
+	void scaleMesh(Vector3F amt) { scale = scale + amt; };
 	void setScale(Vector3F newScale) { scale = newScale; };
 
 	// getters
@@ -238,6 +239,7 @@ Vector2f projectCoordinate(Vector2f, Vector2f, float);
 class MyEngineSystem {
 	friend class XCube2Engine;
 private:
+	int renderCount = 0;
 	std::shared_ptr<GraphicsEngine> gfxInstance = nullptr;
 	const char* vertexShaderSource = "";
 	const char* fragmentShaderSource = "";
