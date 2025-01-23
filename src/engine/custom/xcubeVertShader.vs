@@ -17,6 +17,8 @@ uniform int renderAs2D;
 uniform float cameraFOV;
 uniform vec3 cameraPos;
 
+// calculations follow the projection formula as described by eric lengyel (2012)
+
 float zAxisProjection(float camZ)
 {
     float res = 0.0;
