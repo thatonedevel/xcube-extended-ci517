@@ -309,37 +309,34 @@ void MyEngineSystem::populateVertexStream(Mesh3D mesh, bool is3D)
 			{
 				std::cout << "Setting stream for 3D\n";
 
-				(*vertexStream)[faceIndex] = coordA.getX();
-				(*vertexStream)[faceIndex + 1] = coordA.getY();
-				(*vertexStream)[faceIndex + 2] = coordA.getZ();
+				(*vertexStream)[renderCount] = coordA.getX();
+				(*vertexStream)[renderCount + 1] = coordA.getY();
+				(*vertexStream)[renderCount + 2] = coordA.getZ();
 
-				(*vertexStream)[faceIndex + 3] = coordB.getX();
-				(*vertexStream)[faceIndex + 4] = coordB.getY();
-				(*vertexStream)[faceIndex + 5] = coordB.getZ();
+				(*vertexStream)[renderCount + 3] = coordB.getX();
+				(*vertexStream)[renderCount + 4] = coordB.getY();
+				(*vertexStream)[renderCount + 5] = coordB.getZ();
 
-				(*vertexStream)[faceIndex + 6] = coordC.getX();
-				(*vertexStream)[faceIndex + 7] = coordC.getY();
-				(*vertexStream)[faceIndex + 8] = coordC.getZ();
+				(*vertexStream)[renderCount + 6] = coordC.getX();
+				(*vertexStream)[renderCount + 7] = coordC.getY();
+				(*vertexStream)[renderCount + 8] = coordC.getZ();
 
 				renderCount += 9;
 			}
 			else
 			{
 				std::cout << "Setting stream for 2D\n";
-				if (faceIndex % 6 == 0)
-				{
-					// only use x / y in stream for 2D rendering
-					(*vertexStream)[faceIndex] = coordA.getX();
-					(*vertexStream)[faceIndex + 1] = coordA.getY();
+				// only use x / y in stream for 2D rendering
+				(*vertexStream)[renderCount] = coordA.getX();
+				(*vertexStream)[renderCount + 1] = coordA.getY();
 
-					(*vertexStream)[faceIndex + 2] = coordB.getX();
-					(*vertexStream)[faceIndex + 3] = coordB.getY();
+				(*vertexStream)[renderCount + 2] = coordB.getX();
+				(*vertexStream)[renderCount + 3] = coordB.getY();
 
-					(*vertexStream)[faceIndex + 4] = coordC.getX();
-					(*vertexStream)[faceIndex + 5] = coordC.getY();
+				(*vertexStream)[renderCount + 4] = coordC.getX();
+				(*vertexStream)[renderCount + 5] = coordC.getY();
 
-					renderCount += 6;
-				}
+				renderCount += 6;
 			}
 
 			std::cout << "Added face to vertex stream\n";
